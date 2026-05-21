@@ -897,7 +897,7 @@ function showSaveAlert(msg, type) {
 // ─── LEADERBOARD (via GAS endpoint — no public sheet required) ──────
 async function loadLeaderboard() {
   const tbody = document.getElementById('leaderboard-body');
-  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-secondary);">
+  tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">
     <i class="fa-solid fa-spinner fa-spin"></i> Cargando clasificación...
   </td></tr>`;
   try {
@@ -917,7 +917,7 @@ async function loadLeaderboard() {
     updateStats(json.played || 0);
   } catch (err) {
     tbody.innerHTML =
-      `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-secondary);">
+      `<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">
         <i class="fa-solid fa-cloud-xmark"></i> ${t('login-error-network')}
       </td></tr>`;
     console.error('loadLeaderboard error:', err);
@@ -929,7 +929,7 @@ function renderLeaderboard(data) {
   tbody.innerHTML = '';
   updatePodium(data);
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-secondary);">Sin registros disponibles.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">Sin registros disponibles.</td></tr>`;
     return;
   }
   data.forEach((row, idx) => {
@@ -942,8 +942,7 @@ function renderLeaderboard(data) {
     tr.innerHTML = `
       <td style="text-align:center"><span class="rank-num ${rankClass}">${pos}</span></td>
       <td><div class="player-info-cell"><div class="player-avatar-mini">${init}</div><span>${name}</span></div></td>
-      <td class="points-cell">${pts} pts</td>
-      <td style="text-align:center"><button class="btn-ghost" onclick="showPlayerDetails('${name}')"><i class="fa-solid fa-eye"></i> Ver</button></td>`;
+      <td class="points-cell">${pts} pts</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -1109,9 +1108,9 @@ function initAudio() {
   const audio = document.getElementById('bg-audio');
   if (!audio) return;
 
-  // Start at 35% volume (comfortable ambient level)
-  audio.volume = 0.35;
-  updateVolumeSliderGradient(35);
+  // Start at 10% volume (comfortable ambient level)
+  audio.volume = 0.10;
+  updateVolumeSliderGradient(10);
 
   // Browsers require user interaction before playing audio
   // We attach a one-time handler on first user gesture
