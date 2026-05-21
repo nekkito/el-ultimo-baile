@@ -329,7 +329,7 @@ p { line-height: 1.6; }
 .login-overlay {
   position: fixed;
   inset: 0;
-  background-image: url('./recursos/Fondo.png');
+  background-image: url('./Recursos/Fondo.png');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;

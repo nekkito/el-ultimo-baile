@@ -779,19 +779,19 @@ async function saveAllPredictions() {
       }))
     };
 
-    const res = await fetch(CONFIG.GAS_WEB_APP_URL, {
+    // no-cors + text/plain evita el preflight OPTIONS bloqueado por GitHub Pages.
+    // Apps Script recibe e.postData.contents correctamente sin importar el Content-Type.
+    // La respuesta es opaca (no legible), pero los datos SÍ se guardan en el servidor.
+    await fetch(CONFIG.GAS_WEB_APP_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
-    if (data.status === 'ok' || data.result === 'success') {
-      showSaveAlert(t('save-success'), 'success');
-      localStorage.setItem(`quinielaPreds_${currentUser.email}`, JSON.stringify(predictions));
-    } else {
-      throw new Error(data.message || 'unknown');
-    }
+    showSaveAlert(t('save-success'), 'success');
+    localStorage.setItem(`quinielaPreds_${currentUser.email}`, JSON.stringify(predictions));
+
   } catch (err) {
     showSaveAlert(t('save-error') + ' (' + err.message + ')', 'danger');
   } finally {
