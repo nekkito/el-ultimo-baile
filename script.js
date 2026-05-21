@@ -1,6 +1,7 @@
 /* ============================================================
    EL ÚLTIMO BAILE - MUNDIAL 2026 | script.js
    Serverless Web Quiniela - Full Logic Engine
+   v2.1 - Fix: no-cors save, Recursos paths | 2026-05-20
    ============================================================ */
 
 // ─── CONFIG ───────────────────────────────────────────────────
