@@ -270,6 +270,20 @@
                     <p class="section-desc" data-i18n="leaderboard-desc">Consulta el puntaje en vivo y ranking de todos los participantes.</p>
                 </div>
 
+                <!-- PRIZE POOL CARD -->
+                <div class="prize-pool-card card mb-4">
+                    <div class="prize-pool-content">
+                        <div class="prize-pool-info">
+                            <span class="prize-pool-label"><i class="fa-solid fa-gift" style="color: var(--accent-gold); margin-right: 0.5rem;"></i>BOTE DE PREMIO ACUMULADO</span>
+                            <h2 class="prize-pool-amount outfit" id="prize-pool-amount">$0.00</h2>
+                            <p class="prize-pool-desc" id="prize-pool-participants">Cargando participantes...</p>
+                        </div>
+                        <div class="prize-pool-image-wrapper">
+                            <img id="prize-pool-img" src="./Recursos/PocoDinero.png" alt="Bote de premio">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- STATS CARDS -->
                 <div class="stats-grid mb-4">
                     <div class="stat-card card text-center">
@@ -574,7 +588,7 @@
       <input
         type="range"
         id="audio-volume-slider"
-        min="0" max="100" value="10"
+        min="0" max="100" value="3"
         oninput="setAudioVolume(this.value)"
         title="Volumen"
       >

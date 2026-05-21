@@ -302,6 +302,8 @@ let activeStage = 'groups';
 let predictions = {}; // { matchId: { h: 0, a: 0 } }
 let leaderboardData = [];
 let matchResultsData = [];
+let lastPrizePool = 0;
+let lastActiveParticipants = 0;
 let cooldownTimer = null;
 let cooldownRemaining = 0;
 let countdownInterval = null;
@@ -367,6 +369,10 @@ function applyLanguage(lang) {
   if (activeStage === 'groups') renderGroupMatches(activeGroup);
   else renderPlayoffMatches();
   updateStandingsPanel(activeGroup);
+  
+  if (typeof lastPrizePool !== 'undefined') {
+    updatePrizePool(lastPrizePool, lastActiveParticipants);
+  }
 }
 
 function t(key) {
@@ -915,6 +921,10 @@ async function loadLeaderboard() {
 
     renderLeaderboard(leaderboardData);
     updateStats(json.played || 0);
+
+    lastActiveParticipants = json.activeParticipants !== undefined ? json.activeParticipants : leaderboardData.length;
+    lastPrizePool = json.prizePool !== undefined ? json.prizePool : (lastActiveParticipants * 10);
+    updatePrizePool(lastPrizePool, lastActiveParticipants);
   } catch (err) {
     tbody.innerHTML =
       `<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">
@@ -967,6 +977,31 @@ function updateStats(played) {
   document.getElementById('stat-played-matches').textContent = played != null ? played : 0;
   document.getElementById('stat-total-predictions').textContent =
     leaderboardData.reduce((sum, r) => sum + (Number(r['Total Pronosticos'] || 0)), 0) || '—';
+}
+
+function updatePrizePool(prizePool, activeParticipants) {
+  const amountEl = document.getElementById('prize-pool-amount');
+  const detailsEl = document.getElementById('prize-pool-participants');
+  const imgEl = document.getElementById('prize-pool-img');
+  if (!amountEl || !detailsEl || !imgEl) return;
+
+  const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(prizePool);
+  amountEl.textContent = formatted;
+
+  const cost = activeParticipants > 0 ? Math.round(prizePool / activeParticipants) : 10;
+  detailsEl.textContent = currentLang === 'es' 
+    ? `${activeParticipants} participantes registrados ($${cost} c/u)` 
+    : `${activeParticipants} registered participants ($${cost} each)`;
+
+  let imgSrc = './Recursos/PocoDinero.png';
+  if (activeParticipants > 15) {
+    imgSrc = './Recursos/MuchisimoDinero.png';
+  } else if (activeParticipants > 10) {
+    imgSrc = './Recursos/MuchoDinero.png';
+  } else if (activeParticipants > 5) {
+    imgSrc = './Recursos/DineroMedio.png';
+  }
+  imgEl.src = imgSrc;
 }
 
 function filterLeaderboard() {
@@ -1108,9 +1143,9 @@ function initAudio() {
   const audio = document.getElementById('bg-audio');
   if (!audio) return;
 
-  // Start at 10% volume (comfortable ambient level)
-  audio.volume = 0.10;
-  updateVolumeSliderGradient(10);
+  // Start at 3% volume (comfortable ambient level)
+  audio.volume = 0.03;
+  updateVolumeSliderGradient(3);
 
   // Browsers require user interaction before playing audio
   // We attach a one-time handler on first user gesture
