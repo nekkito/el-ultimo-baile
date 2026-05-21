@@ -416,6 +416,15 @@ async function handleLogin(e) {
     // Store user and show app
     currentUser = { name, email, key };
     sessionStorage.setItem('quinielaUser', JSON.stringify(currentUser));
+
+    // ── Reveal admin tab exclusively for the admin account ──
+    const adminTab = document.getElementById('tab-admin');
+    if (email === '2026quiniela2026@gmail.com') {
+      adminTab.style.display = '';
+    } else {
+      adminTab.style.display = 'none';
+    }
+
     showApp();
 
   } catch (err) {
@@ -459,19 +468,26 @@ function showApp() {
   updateBestThirdsPanel();
   initCountdown();
   checkDeadline();
+  initDeadlineWarning();   // ← pre-close blinking alert
   loadLeaderboard();
   setTimeout(initMatchAnimations, 200);
 }
 
 // ─── TAB NAVIGATION ────────────────────────────────────────────
 function switchTab(tab) {
-  ['predictions','leaderboard','tribute'].forEach(t => {
-    document.getElementById(`sec-${t}`).classList.remove('active');
-    document.getElementById(`tab-${t}`).classList.remove('active');
+  const ALL_TABS = ['predictions','leaderboard','tribute','admin'];
+  ALL_TABS.forEach(id => {
+    const sec = document.getElementById(`sec-${id}`);
+    const btn = document.getElementById(`tab-${id}`);
+    if (sec) sec.classList.remove('active');
+    if (btn) btn.classList.remove('active');
   });
-  document.getElementById(`sec-${tab}`).classList.add('active');
-  document.getElementById(`tab-${tab}`).classList.add('active');
+  const secEl = document.getElementById(`sec-${tab}`);
+  const btnEl = document.getElementById(`tab-${tab}`);
+  if (secEl) secEl.classList.add('active');
+  if (btnEl) btnEl.classList.add('active');
   if (tab === 'leaderboard') loadLeaderboard();
+  if (tab === 'admin') refreshAdminStats();
 }
 
 // ─── GROUP SELECTORS ────────────────────────────────────────────
@@ -826,7 +842,7 @@ function showSaveAlert(msg, type) {
   div.textContent = msg;
   div.style.cssText = 'margin-bottom:1rem; animation: slideUp 0.4s ease;';
   document.getElementById('sec-predictions').insertBefore(div, document.getElementById('sec-predictions').firstChild);
-  setTimeout(() => div.remove(), 5000);
+  setTimeout(() => div.remove(), 15000); // 15 seconds visibility
 }
 
 // ─── LEADERBOARD (from Google Sheets) ──────────────────────────
@@ -1183,3 +1199,134 @@ document.addEventListener('DOMContentLoaded', () => {
     updateVideoOnScroll();
   }, { passive: true });
 });
+
+// ─── ADMIN PANEL FUNCTIONS ──────────────────────────────────────
+
+/**
+ * Queries the Apps Script for the access key of any participant.
+ * Only callable when logged in as the admin account.
+ */
+async function adminQueryKey() {
+  const emailInput = document.getElementById('admin-email-input');
+  const resultBox  = document.getElementById('admin-result-box');
+  const resultKey  = document.getElementById('admin-result-key');
+  const resultErr  = document.getElementById('admin-result-error');
+  const queryBtn   = document.getElementById('admin-query-btn');
+
+  const targetEmail = emailInput.value.trim().toLowerCase();
+  if (!targetEmail) {
+    resultErr.textContent = 'Ingresa el correo del participante.';
+    resultErr.classList.remove('hidden');
+    resultBox.classList.add('hidden');
+    return;
+  }
+
+  resultErr.classList.add('hidden');
+  resultBox.classList.add('hidden');
+  queryBtn.disabled = true;
+  queryBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando...';
+
+  try {
+    const url = `${CONFIG.GAS_WEB_APP_URL}?action=getKey` +
+      `&adminEmail=${encodeURIComponent(currentUser.email)}` +
+      `&adminKey=${encodeURIComponent(currentUser.key)}` +
+      `&targetEmail=${encodeURIComponent(targetEmail)}`;
+
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    if (data.status === 'ok' && data.key) {
+      resultKey.textContent = data.key.toUpperCase();
+      resultBox.classList.remove('hidden');
+      // Neon glow pulse animation
+      resultKey.style.animation = 'none';
+      requestAnimationFrame(() => { resultKey.style.animation = ''; });
+    } else {
+      resultErr.textContent = data.message || 'Participante no encontrado en el sistema.';
+      resultErr.classList.remove('hidden');
+    }
+  } catch (err) {
+    resultErr.textContent = 'Error de red: ' + err.message;
+    resultErr.classList.remove('hidden');
+  } finally {
+    queryBtn.disabled = false;
+    queryBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Consultar Key de Acceso';
+  }
+}
+
+/**
+ * Refreshes the admin stats panel with live debug data from Apps Script.
+ */
+async function refreshAdminStats() {
+  const statPart  = document.getElementById('admin-stat-participants');
+  const statPreds = document.getElementById('admin-stat-predictions');
+  const statDL    = document.getElementById('admin-stat-deadline');
+
+  // Deadline countdown
+  const now  = new Date();
+  const diff = CONFIG.DEADLINE - now;
+  if (diff <= 0) {
+    statDL.textContent = '🔒 Cerrado';
+  } else {
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000) / 60000);
+    statDL.textContent = `${days}d ${hours}h ${mins}m`;
+  }
+
+  try {
+    const url  = `${CONFIG.GAS_WEB_APP_URL}?action=debug`;
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    if (data.status === 'ok') {
+      const accSheet = (data.sheets || []).find(s => s.name === 'Accesos');
+      const prnSheet = (data.sheets || []).find(s => s.name === 'Pronósticos (IA)');
+      statPart.textContent  = accSheet  ? Math.max(0, accSheet.rows  - 1) : '--';
+      statPreds.textContent = prnSheet  ? Math.max(0, prnSheet.rows - 1) : '--';
+    }
+  } catch (_) {
+    statPart.textContent  = 'err';
+    statPreds.textContent = 'err';
+  }
+}
+
+// ─── PRE-DEADLINE WARNING (2 HOURS BEFORE CLOSE) ────────────────
+
+/**
+ * Shows a blinking warning banner when within 2 hours of the deadline.
+ * Updates the text with the remaining time; hides after deadline passes.
+ */
+function initDeadlineWarning() {
+  const WARNING_MS = 2 * 60 * 60 * 1000; // 2 hours in ms
+  const banner     = document.getElementById('pre-deadline-warning');
+  const textEl     = document.getElementById('pre-deadline-text');
+
+  function checkWarning() {
+    const now  = new Date();
+    const diff = CONFIG.DEADLINE - now;
+
+    if (diff <= 0) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    if (diff <= WARNING_MS) {
+      const hours = Math.floor(diff / 3600000);
+      const mins  = Math.floor((diff % 3600000) / 60000);
+      const secs  = Math.floor((diff % 60000) / 1000);
+      const timeStr = hours > 0
+        ? `${hours}h ${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`
+        : `${mins}m ${String(secs).padStart(2,'0')}s`;
+
+      textEl.textContent = `⚠️ ¡ATENCIÓN! El cierre de la Quiniela es en ${timeStr}. ` +
+        `Tu ticket final se congela a las 15:00 EST. ¡Guarda tus pronósticos ahora!`;
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  checkWarning();
+  setInterval(checkWarning, 1000);
+}

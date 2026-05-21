@@ -138,7 +138,19 @@
             <button id="tab-tribute" class="tab-btn" onclick="switchTab('tribute')">
                 <i class="fa-solid fa-trophy"></i> <span data-i18n="tab-label-tribute">El Último Baile</span>
             </button>
+            <!-- ADMIN TAB: hidden by default, revealed only for admin email -->
+            <button id="tab-admin" class="tab-btn tab-admin-btn" onclick="switchTab('admin')" style="display:none">
+                <i class="fa-solid fa-gear"></i> <span>⚙️ Panel Admin</span>
+            </button>
         </nav>
+
+        <!-- PRE-DEADLINE WARNING BANNER (shown 2h before close) -->
+        <div id="pre-deadline-warning" class="container" style="display:none;padding-top:0.75rem;">
+            <div class="alert alert-deadline-blink flex-align" id="pre-deadline-inner">
+                <i class="fa-solid fa-triangle-exclamation" style="margin-right:0.5rem;"></i>
+                <span id="pre-deadline-text">⚠️ ¡Cierre en menos de 2 horas! El ticket final se congela a las 15:00 EST del 11 de Junio. ¡Guarda tus pronósticos ahora!</span>
+            </div>
+        </div>
 
         <!-- MAIN CONTAINER -->
         <main class="container py-4">
@@ -453,6 +465,65 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- SECTION: ADMIN PANEL (solo visible para administrador) -->
+            <section id="sec-admin" class="content-section">
+                <div class="admin-panel-header text-center mb-4">
+                    <h2 class="outfit section-title"><i class="fa-solid fa-shield-halved" style="color:var(--gold);"></i> Panel de Administración</h2>
+                    <p class="section-desc">Herramientas exclusivas del administrador de la Quiniela 2026.</p>
+                </div>
+
+                <!-- KEY LOOKUP TOOL -->
+                <div class="admin-card card">
+                    <div class="admin-card-header">
+                        <i class="fa-solid fa-key" style="color:var(--gold);"></i>
+                        <h3 class="outfit">Consultor de Keys de Acceso</h3>
+                    </div>
+                    <p class="admin-card-desc">Ingresa el correo de un participante para obtener su key de acceso registrada en el sistema.</p>
+                    <div class="admin-query-form">
+                        <div class="input-group">
+                            <label for="admin-email-input">Correo del Participante</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" id="admin-email-input" placeholder="participante@correo.com">
+                            </div>
+                        </div>
+                        <button id="admin-query-btn" class="btn btn-gold" onclick="adminQueryKey()">
+                            <i class="fa-solid fa-magnifying-glass"></i> Consultar Key de Acceso
+                        </button>
+                    </div>
+                    <div id="admin-result-box" class="admin-result hidden">
+                        <span class="admin-result-label">Key de Acceso:</span>
+                        <span id="admin-result-key" class="admin-key-display">----</span>
+                    </div>
+                    <div id="admin-result-error" class="alert alert-danger hidden" style="margin-top:1rem;"></div>
+                </div>
+
+                <!-- PARTICIPANTS OVERVIEW -->
+                <div class="admin-card card" style="margin-top:1.5rem;">
+                    <div class="admin-card-header">
+                        <i class="fa-solid fa-users" style="color:var(--gold);"></i>
+                        <h3 class="outfit">Estado del Sistema</h3>
+                    </div>
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-item">
+                            <span class="admin-stat-val" id="admin-stat-participants">--</span>
+                            <span class="admin-stat-lbl">Participantes Activos</span>
+                        </div>
+                        <div class="admin-stat-item">
+                            <span class="admin-stat-val" id="admin-stat-predictions">--</span>
+                            <span class="admin-stat-lbl">Pronósticos Registrados</span>
+                        </div>
+                        <div class="admin-stat-item">
+                            <span class="admin-stat-val" id="admin-stat-deadline">--</span>
+                            <span class="admin-stat-lbl">Tiempo Restante</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-ghost" style="margin-top:1rem;" onclick="refreshAdminStats()">
+                        <i class="fa-solid fa-rotate"></i> Actualizar Stats
+                    </button>
                 </div>
             </section>
 
