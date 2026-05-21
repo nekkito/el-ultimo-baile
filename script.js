@@ -586,6 +586,33 @@ function renderGroupMatches(group) {
 
   setTimeout(initMatchAnimations, 50);
   updateStandingsPanel(group);
+
+  // ── Auto-advance to next group when last card scrolls into view ──
+  setTimeout(() => {
+    const cards = container.querySelectorAll('.match-card');
+    if (!cards.length || activeStage !== 'groups') return;
+    const lastCard = cards[cards.length - 1];
+
+    const advanceObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        advanceObserver.disconnect();
+        const idx = GROUPS.indexOf(activeGroup);
+        const nextGroup = GROUPS[(idx + 1) % GROUPS.length];
+        // Small delay so user sees the last card before switching
+        setTimeout(() => {
+          activeGroup = nextGroup;
+          document.querySelectorAll('.group-btn').forEach(b => {
+            b.classList.toggle('active', b.textContent.trim() === nextGroup);
+          });
+          renderGroupMatches(nextGroup);
+          updateStandingsPanel(nextGroup);
+        }, 600);
+      });
+    }, { threshold: 1.0 });
+
+    advanceObserver.observe(lastCard);
+  }, 200);
 }
 
 // ─── RENDER PLAYOFF MATCHES ─────────────────────────────────────
@@ -837,14 +864,34 @@ function startCooldown() {
 }
 
 function showSaveAlert(msg, type) {
-  const existing = document.querySelector('.save-alert-banner');
+  // Remove any existing toast
+  const existing = document.getElementById('save-toast');
   if (existing) existing.remove();
-  const div = document.createElement('div');
-  div.className = `alert alert-${type} save-alert-banner fade-in-up`;
-  div.textContent = msg;
-  div.style.cssText = 'margin-bottom:1rem; animation: slideUp 0.4s ease;';
-  document.getElementById('sec-predictions').insertBefore(div, document.getElementById('sec-predictions').firstChild);
-  setTimeout(() => div.remove(), 15000); // 15 seconds visibility
+
+  const toast = document.createElement('div');
+  toast.id = 'save-toast';
+  const icon = type === 'success'
+    ? '<i class="fa-solid fa-circle-check"></i>'
+    : '<i class="fa-solid fa-triangle-exclamation"></i>';
+  toast.innerHTML = `${icon} <span>${msg}</span>`;
+  toast.className = `save-toast save-toast-${type}`;
+  document.body.appendChild(toast);
+
+  // Trigger slide-in
+  requestAnimationFrame(() => toast.classList.add('save-toast-visible'));
+
+  // Auto-dismiss after 10 seconds
+  const timer = setTimeout(() => {
+    toast.classList.remove('save-toast-visible');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  }, 10000);
+
+  // Click to dismiss early
+  toast.addEventListener('click', () => {
+    clearTimeout(timer);
+    toast.classList.remove('save-toast-visible');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  });
 }
 
 // ─── LEADERBOARD (from Google Sheets) ──────────────────────────

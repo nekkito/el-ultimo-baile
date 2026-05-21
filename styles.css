@@ -474,6 +474,20 @@ p { line-height: 1.6; }
   padding-top: 4rem;
   padding-bottom: 2rem;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.hero-left {
+  flex: 1;
+  min-width: 0;
+}
+.hero-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 .hero-legends-wrapper {
   display: flex;
@@ -1533,3 +1547,60 @@ p { line-height: 1.6; }
 .admin-stat-val { display:block; font-size:1.8rem; font-weight:800; color:var(--accent-gold); font-family:var(--font-display); }
 .admin-stat-lbl { display:block; font-size:.75rem; color:var(--text-muted); margin-top:.25rem; text-transform:uppercase; letter-spacing:.4px; }
 :root { --gold: var(--accent-gold); }
+
+/* ─── GRUPOS LABEL ──────────────────────────────────────────────── */
+.group-label-prefix {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* ─── FIXED SAVE TOAST (bottom-right, all tabs) ─────────────────── */
+.save-toast {
+  position: fixed;
+  bottom: 5rem;          /* above the audio widget */
+  right: 1.5rem;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1.3rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  max-width: 340px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  cursor: pointer;
+  /* Start hidden (slide from right) */
+  transform: translateX(110%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+}
+.save-toast.save-toast-visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+.save-toast-success {
+  background: linear-gradient(135deg, rgba(22,163,74,0.2), rgba(16,185,129,0.15));
+  border: 1px solid rgba(22,163,74,0.5);
+  color: #4ade80;
+}
+.save-toast-success i { color: #4ade80; font-size: 1.1rem; }
+.save-toast-danger {
+  background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(220,38,38,0.15));
+  border: 1px solid rgba(239,68,68,0.5);
+  color: #f87171;
+}
+.save-toast-danger i { color: #f87171; font-size: 1.1rem; }
+
+/* ─── HERO TWO-COLUMN — mobile override ─────────────────────────── */
+@media (max-width: 768px) {
+  .hero-container { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .hero-right { justify-content: flex-start; width: 100%; }
+  .user-welcome-banner { width: fit-content; }
+  .save-toast { right: 0.75rem; bottom: 4rem; max-width: calc(100vw - 1.5rem); font-size: 0.82rem; }
+}

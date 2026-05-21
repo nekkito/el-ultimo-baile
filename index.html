@@ -27,13 +27,10 @@
       <source src="./Recursos/AnimacionCopa.webm" type="video/webm">
     </video>
 
-    <!-- FLOATING CONTROLS (BILINGUAL & THEME TOGGLE) -->
+    <!-- FLOATING CONTROLS (BILINGUAL only — theme toggle removed) -->
     <div class="floating-controls">
         <button id="lang-toggle-btn" class="control-btn" title="Switch Language" onclick="toggleLanguage()">
             <i class="fa-solid fa-earth-americas"></i> <span id="lang-btn-text">EN</span>
-        </button>
-        <button id="theme-toggle-btn" class="control-btn" title="Toggle Theme" onclick="toggleTheme()">
-            <i class="fa-solid fa-sun"></i>
         </button>
         <button id="logout-btn" class="control-btn hidden" title="Cerrar Sesión" onclick="logout()">
             <i class="fa-solid fa-right-from-bracket"></i>
@@ -99,29 +96,32 @@
             <div class="hero-bg-parallax"></div>
             <div class="hero-overlay"></div>
             <div class="hero-container container">
-                <div class="hero-legends-wrapper">
-                    <div class="hero-legend">
-                        <div class="hero-badge badge-argentina">ARG 10</div>
-                        <h2 class="outfit">Messi</h2>
+                <!-- LEFT COLUMN: Badges + Title -->
+                <div class="hero-left">
+                    <div class="hero-legends-wrapper">
+                        <div class="hero-legend">
+                            <div class="hero-badge badge-argentina">ARG 10</div>
+                        </div>
+                        <div class="hero-legend">
+                            <div class="hero-badge badge-portugal">POR 7</div>
+                        </div>
+                        <div class="hero-legend">
+                            <div class="hero-badge badge-brazil">BRA 10</div>
+                        </div>
                     </div>
-                    <div class="hero-legend">
-                        <div class="hero-badge badge-portugal">POR 7</div>
-                        <h2 class="outfit">Ronaldo</h2>
-                    </div>
-                    <div class="hero-legend">
-                        <div class="hero-badge badge-brazil">BRA 10</div>
-                        <h2 class="outfit">Neymar Jr</h2>
+                    <div class="hero-titles">
+                        <h1 class="outfit hero-main-title" data-i18n="hero-title">El Último Baile</h1>
+                        <p class="hero-subtitle text-glow" data-i18n="hero-tagline">Quiniela IA • Copa Mundial de la FIFA 2026™</p>
                     </div>
                 </div>
-                <div class="hero-titles">
-                    <h1 class="outfit hero-main-title" data-i18n="hero-title">El Último Baile</h1>
-                    <p class="hero-subtitle text-glow" data-i18n="hero-tagline">Quiniela IA • Copa Mundial de la FIFA 2026™</p>
-                </div>
-                <div class="user-welcome-banner card">
-                    <div class="user-avatar" id="header-avatar">M</div>
-                    <div class="user-meta">
-                        <span class="user-greeting" data-i18n="greeting">¡Hola, jugador!</span>
-                        <h3 id="header-user-name">Usuario de Prueba</h3>
+                <!-- RIGHT COLUMN: User welcome card -->
+                <div class="hero-right">
+                    <div class="user-welcome-banner card">
+                        <div class="user-avatar" id="header-avatar">M</div>
+                        <div class="user-meta">
+                            <span class="user-greeting" data-i18n="greeting">¡Hola, jugador!</span>
+                            <h3 id="header-user-name">Usuario de Prueba</h3>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -196,8 +196,11 @@
                             <span data-i18n="filter-playoffs">Fase de Eliminatorias (Playoffs)</span>
                         </button>
                     </div>
-                    <div class="group-selectors flex-wrap" id="group-letter-selectors">
-                        <!-- Letters A to L injected by JS -->
+                    <div class="group-selectors-wrapper flex-align" style="gap:0.5rem;">
+                        <span class="group-label-prefix">Grupos:</span>
+                        <div class="group-selectors flex-wrap" id="group-letter-selectors">
+                            <!-- Letters A to L injected by JS -->
+                        </div>
                     </div>
                 </div>
 
