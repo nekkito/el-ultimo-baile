@@ -768,30 +768,28 @@ async function saveAllPredictions() {
   saveBtn.classList.add('saving');
 
   try {
-    const payload = {
-      nombre: currentUser.name,
-      correo: currentUser.email,
-      key: currentUser.key,
-      timestamp: new Date().toISOString(),
-      pronosticos: Object.entries(predictions).map(([id, scores]) => ({
-        partido_id: id,
-        goles_local: scores.h,
-        goles_visitante: scores.a
-      }))
-    };
-
-    // no-cors + text/plain evita el preflight OPTIONS bloqueado por GitHub Pages.
-    // Apps Script recibe e.postData.contents correctamente sin importar el Content-Type.
-    // La respuesta es opaca (no legible), pero los datos SÍ se guardan en el servidor.
-    await fetch(CONFIG.GAS_WEB_APP_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
+    // GET request: no CORS preflight, full response readable, works from GitHub Pages.
+    // The predictions object is JSON-encoded as a URL parameter.
+    const params = new URLSearchParams({
+      action:  'save',
+      nombre:  currentUser.name,
+      correo:  currentUser.email,
+      key:     currentUser.key,
+      ts:      new Date().toISOString(),
+      preds:   JSON.stringify(predictions)   // { M_01:{h:2,a:1}, ... }
     });
 
-    showSaveAlert(t('save-success'), 'success');
-    localStorage.setItem(`quinielaPreds_${currentUser.email}`, JSON.stringify(predictions));
+    const res = await fetch(`${CONFIG.GAS_WEB_APP_URL}?${params.toString()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+
+    if (data.status === 'ok' || data.result === 'success') {
+      showSaveAlert(t('save-success'), 'success');
+      localStorage.setItem(`quinielaPreds_${currentUser.email}`, JSON.stringify(predictions));
+    } else {
+      throw new Error(data.message || 'server-error');
+    }
 
   } catch (err) {
     showSaveAlert(t('save-error') + ' (' + err.message + ')', 'danger');
