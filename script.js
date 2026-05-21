@@ -7,9 +7,7 @@
 // ─── CONFIG ───────────────────────────────────────────────────
 const CONFIG = {
   SPREADSHEET_ID: '1HjZ-zkAaxXIzFmL5lwyWmD7rRaMxB85tEX_wmvMFMjQ',
-  // Deploy this as a Web App via Google Apps Script (doPost handler below)
-  // Replace this URL after deploying the Apps Script
-  GAS_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwqPh_CfI2OKF5W37PoaXI2jKjQMdEpgf5jMiz4EtI0xdE3lF56yd9GN9KXm5nkGIU9MA/exec',
+  GAS_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbx7r4teub7sCqVpQtVz0t9Vza5VNyB0v7V0i9sPx5c8bYlY3svz739maZ7Q-Em9oTK4ZA/exec',
   DEADLINE: new Date('2026-06-11T15:00:00-04:00'), // June 11, 2026 15:00 EST (UTC-4 in summer)
   COOLDOWN_SECONDS: 60,
 };
