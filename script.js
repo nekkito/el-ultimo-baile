@@ -1296,10 +1296,19 @@ async function refreshAdminStats() {
     const data = await res.json();
 
     if (data.status === 'ok') {
-      const accSheet = (data.sheets || []).find(s => s.name === 'Accesos');
-      const prnSheet = (data.sheets || []).find(s => s.name === 'Pronósticos (IA)');
-      statPart.textContent  = accSheet  ? Math.max(0, accSheet.rows  - 1) : '--';
-      statPreds.textContent = prnSheet  ? Math.max(0, prnSheet.rows - 1) : '--';
+      if (typeof data.real_participants !== 'undefined') {
+        statPart.textContent = data.real_participants;
+      } else {
+        const accSheet = (data.sheets || []).find(s => s.name === 'Accesos');
+        statPart.textContent = accSheet ? Math.max(0, accSheet.rows - 1) : '--';
+      }
+
+      if (typeof data.real_predictions !== 'undefined') {
+        statPreds.textContent = data.real_predictions;
+      } else {
+        const prnSheet = (data.sheets || []).find(s => s.name === 'Pronósticos (IA)');
+        statPreds.textContent = prnSheet ? Math.max(0, prnSheet.rows - 1) : '--';
+      }
     }
   } catch (_) {
     statPart.textContent  = 'err';
