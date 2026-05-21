@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    EL ÚLTIMO BAILE - MUNDIAL 2026 | script.js
    Serverless Web Quiniela - Full Logic Engine
    v2.1 - Fix: no-cors save, Recursos paths | 2026-05-20
@@ -976,18 +976,102 @@ function filterLeaderboard() {
   renderLeaderboard(filtered);
 }
 
-function showPlayerDetails(name) {
+async function showPlayerDetails(name) {
   document.getElementById('modal-user-email').textContent = name;
-  const matchMap = {};
-  matchResultsData.forEach(m => { if (m['ID Partido']) matchMap[m['ID Partido']] = m; });
-  // Retrieve all prediction data from GSheets (already loaded as leaderboard summary — detail requires separate fetch)
   document.getElementById('detail-total-points').textContent = '—';
   document.getElementById('detail-perfect-hits').textContent = '—';
   document.getElementById('detail-winner-hits').textContent = '—';
-  document.getElementById('detail-table-body').innerHTML = `<tr><td colspan="4" style="text-align:center;padding:1.5rem;color:var(--text-secondary);">
-    Para ver detalles completos, consulta la hoja de Google Sheets.
-  </td></tr>`;
+  document.getElementById('detail-table-body').innerHTML = `
+    <tr>
+      <td colspan="4" style="text-align:center;padding:2rem;color:var(--text-secondary);">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando detalles del jugador...
+      </td>
+    </tr>
+  `;
   openModal('modal-details');
+
+  try {
+    const url = `${CONFIG.GAS_WEB_APP_URL}?action=playerDetail&name=${encodeURIComponent(name)}`;
+    const res = await fetch(url).then(r => r.json());
+    if (res.status === 'ok') {
+      document.getElementById('detail-total-points').textContent = res.totalPoints;
+      document.getElementById('detail-perfect-hits').textContent = res.perfectHits;
+      document.getElementById('detail-winner-hits').textContent = res.winnerHits;
+
+      const tbody = document.getElementById('detail-table-body');
+      tbody.innerHTML = '';
+
+      if (!res.predictions || !res.predictions.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align:center;padding:1.5rem;color:var(--text-secondary);">
+              El jugador no ha guardado pronósticos.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Sort predictions by match ID numerical order
+      const sortedPreds = [...res.predictions].sort((a, b) => {
+        const idA = parseInt(a.id.replace('M_', '')) || 0;
+        const idB = parseInt(b.id.replace('M_', '')) || 0;
+        return idA - idB;
+      });
+
+      sortedPreds.forEach(pred => {
+        let matchText = pred.id;
+        const m = GROUP_MATCHES.find(x => x.id === pred.id) || PLAYOFF_MATCHES.find(x => x.id === pred.id);
+        if (m) {
+          if (m.h && m.a) {
+            matchText = `${m.h} vs ${m.a}`;
+          } else if (m.label) {
+            matchText = m.label;
+          }
+        }
+
+        const predScore = (pred.predH !== '' && pred.predH !== null && pred.predA !== '' && pred.predA !== null) 
+          ? `${pred.predH} - ${pred.predA}` 
+          : '—';
+        const realScore = (pred.realH !== '' && pred.realH !== null && pred.realA !== '' && pred.realA !== null) 
+          ? `${pred.realH} - ${pred.realA}` 
+          : '—';
+
+        let badgeClass = 'pts-badge zero';
+        if (pred.pts === 5) {
+          badgeClass = 'pts-badge perfect';
+        } else if (pred.pts === 3) {
+          badgeClass = 'pts-badge winner';
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: left; font-weight: 500;">${matchText}</td>
+          <td style="text-align: center;">${predScore}</td>
+          <td style="text-align: center; color: var(--accent-gold); font-weight: bold;">${realScore}</td>
+          <td style="text-align: center;"><span class="${badgeClass}">${pred.pts}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      document.getElementById('detail-table-body').innerHTML = `
+        <tr>
+          <td colspan="4" style="text-align:center;padding:1.5rem;color:var(--text-secondary);">
+            Error al cargar: ${res.message || 'Error desconocido'}
+          </td>
+        </tr>
+      `;
+    }
+  } catch (err) {
+    document.getElementById('detail-table-body').innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align:center;padding:1.5rem;color:var(--text-secondary);">
+          Error de red al cargar los detalles.
+        </td>
+      </tr>
+    `;
+    console.error('Error fetching player details:', err);
+  }
 }
 
 // ─── MODAL ─────────────────────────────────────────────────────
