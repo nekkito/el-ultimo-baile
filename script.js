@@ -401,7 +401,7 @@ async function handleLogin(e) {
 
   try {
     // Use the Apps Script endpoint to validate (avoids CORS from file://)
-    const url = `${CONFIG.GAS_WEB_APP_URL}?action=validate&email=${encodeURIComponent(email)}&key=${encodeURIComponent(key)}`;
+    const url = `${CONFIG.GAS_WEB_APP_URL}?action=validate&email=${encodeURIComponent(email)}&key=${encodeURIComponent(key)}&nombre=${encodeURIComponent(name)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('network');
     const data = await res.json();
@@ -1238,11 +1238,25 @@ async function adminQueryKey() {
     const data = await res.json();
 
     if (data.status === 'ok' && data.key) {
+      const labelEl = resultBox.querySelector('.admin-result-label');
+      if (data.exists) {
+        labelEl.innerHTML = '<i class="fa-solid fa-key" style="color:var(--gold);"></i> Key de Acceso (Existente):';
+        resultBox.style.borderColor = 'rgba(236,208,111,0.35)';
+      } else {
+        labelEl.innerHTML = '<i class="fa-solid fa-user-plus" style="color:#22c55e;"></i> ¡Nuevo Participante Registrado! Key de Acceso:';
+        resultBox.style.borderColor = '#22c55e';
+      }
+      
       resultKey.textContent = data.key.toUpperCase();
       resultBox.classList.remove('hidden');
       // Neon glow pulse animation
       resultKey.style.animation = 'none';
       requestAnimationFrame(() => { resultKey.style.animation = ''; });
+      
+      // Refresh admin stats to reflect the new user count immediately if registered
+      if (!data.exists) {
+        refreshAdminStats();
+      }
     } else {
       resultErr.textContent = data.message || 'Participante no encontrado en el sistema.';
       resultErr.classList.remove('hidden');
