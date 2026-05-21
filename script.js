@@ -417,14 +417,6 @@ async function handleLogin(e) {
     currentUser = { name, email, key };
     sessionStorage.setItem('quinielaUser', JSON.stringify(currentUser));
 
-    // ── Reveal admin tab exclusively for the admin account ──
-    const adminTab = document.getElementById('tab-admin');
-    if (email === '2026quiniela2026@gmail.com') {
-      adminTab.style.display = '';
-    } else {
-      adminTab.style.display = 'none';
-    }
-
     showApp();
 
   } catch (err) {
@@ -447,12 +439,22 @@ function logout() {
   document.getElementById('login-gate').style.display = 'flex';
   document.getElementById('logout-btn').classList.add('hidden');
   document.getElementById('login-form').reset();
+  // Always hide admin tab on logout
+  const adminTab = document.getElementById('tab-admin');
+  if (adminTab) adminTab.style.display = 'none';
 }
 
 function showApp() {
   document.getElementById('login-gate').style.display = 'none';
   document.getElementById('app-content').classList.remove('hidden');
   document.getElementById('logout-btn').classList.remove('hidden');
+
+  // ── Admin tab: visible ONLY for the admin account ─────────────
+  // This runs on fresh login AND on session restore from sessionStorage
+  const adminTab = document.getElementById('tab-admin');
+  if (adminTab) {
+    adminTab.style.display = (currentUser.email === '2026quiniela2026@gmail.com') ? '' : 'none';
+  }
 
   // Set welcome header
   document.getElementById('header-user-name').textContent = currentUser.name;
