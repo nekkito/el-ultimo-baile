@@ -1100,97 +1100,9 @@ function updateVideoOnScroll() {
    🌀 SMOOTH INERTIA SCROLL ENGINE
    Simulates physical damping / mechanical friction for premium feel
    ═══════════════════════════════════════════════════════════════ */
-const InertiaScroll = (() => {
-  // Configuration
-  const FRICTION      = 0.96;    // Ultra-gentle damping — silky glide
-  const WHEEL_FORCE   = 35;      // Light impulse per wheel notch
-  const TOUCH_SCALE   = 1.0;     // Touch gesture multiplier
-  const MIN_VELOCITY  = 0.3;     // Stop threshold (pixels/frame)
-  const FPS_FACTOR    = 16.67;   // ~60fps reference
-
-  let velocity   = 0;
-  let rafId      = null;
-  let lastY      = 0;
-  let touching   = false;
-  let enabled    = true;
-
-  function clampScroll(target) {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    return Math.max(0, Math.min(target, max));
-  }
-
-  function animate() {
-    if (Math.abs(velocity) < MIN_VELOCITY) {
-      velocity = 0;
-      rafId = null;
-      return;
-    }
-    window.scrollTo(0, clampScroll(window.scrollY + velocity));
-    velocity *= FRICTION;
-    rafId = requestAnimationFrame(animate);
-  }
-
-  function addVelocity(delta) {
-    if (!enabled) return;
-    velocity += delta;
-    if (!rafId) rafId = requestAnimationFrame(animate);
-  }
-
-  function onWheel(e) {
-    // Only intercept when focused on the predictions section (matches list)
-    const el = document.getElementById('matches-container');
-    if (!el) return;
-
-    // Allow natural scroll on scrollable sub-elements (dropdowns, tables)
-    const target = e.target;
-    if (target.closest('.table-responsive') || target.closest('.modal-overlay')) return;
-
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? WHEEL_FORCE : -WHEEL_FORCE;
-    addVelocity(delta);
-  }
-
-  function onTouchStart(e) {
-    touching = true;
-    lastY = e.touches[0].clientY;
-    velocity = 0;
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-  }
-
-  function onTouchMove(e) {
-    if (!touching) return;
-    const currentY = e.touches[0].clientY;
-    const delta = (lastY - currentY) * TOUCH_SCALE;
-    lastY = currentY;
-    addVelocity(delta);
-  }
-
-  function onTouchEnd() {
-    touching = false;
-    // Let inertia carry on from existing velocity
-    if (Math.abs(velocity) > MIN_VELOCITY && !rafId) {
-      rafId = requestAnimationFrame(animate);
-    }
-  }
-
-  function init() {
-    // Passive: false is required to call preventDefault on wheel
-    window.addEventListener('wheel', onWheel, { passive: false });
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-  }
-
-  return { init };
-})();
-
-/* ═══════════════════════════════════════════════════════════════
-   🚀 MULTIMEDIA INIT — Called once DOM is ready
-   ═══════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   initAudio();
   initVideoBackground();
-  InertiaScroll.init();
 
   // Unified scroll event: parallax + video sync
   window.addEventListener('scroll', () => {
