@@ -304,6 +304,7 @@ let leaderboardData = [];
 let matchResultsData = [];
 let lastPrizePool = 0;
 let lastActiveParticipants = 0;
+let lastCostPerParticipant = 10;
 let cooldownTimer = null;
 let cooldownRemaining = 0;
 let countdownInterval = null;
@@ -371,7 +372,7 @@ function applyLanguage(lang) {
   updateStandingsPanel(activeGroup);
   
   if (typeof lastPrizePool !== 'undefined') {
-    updatePrizePool(lastPrizePool, lastActiveParticipants);
+    updatePrizePool(lastPrizePool, lastActiveParticipants, lastCostPerParticipant);
   }
 }
 
@@ -920,11 +921,13 @@ async function loadLeaderboard() {
     matchResultsData = [];
 
     renderLeaderboard(leaderboardData);
-    updateStats(json.played || 0);
 
     lastActiveParticipants = json.activeParticipants !== undefined ? json.activeParticipants : leaderboardData.length;
-    lastPrizePool = json.prizePool !== undefined ? json.prizePool : (lastActiveParticipants * 10);
-    updatePrizePool(lastPrizePool, lastActiveParticipants);
+    lastCostPerParticipant = json.costPerParticipant !== undefined ? json.costPerParticipant : 10;
+    lastPrizePool = json.prizePool !== undefined ? json.prizePool : (lastActiveParticipants * lastCostPerParticipant);
+
+    updateStats(json.played || 0, lastActiveParticipants, json.totalPredictions);
+    updatePrizePool(lastPrizePool, lastActiveParticipants, lastCostPerParticipant);
   } catch (err) {
     tbody.innerHTML =
       `<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">
@@ -972,14 +975,17 @@ function updatePodium(data) {
   });
 }
 
-function updateStats(played) {
-  document.getElementById('stat-total-users').textContent = leaderboardData.length;
+function updateStats(played, activeParticipants, totalPredictions) {
+  const activeCount = activeParticipants !== undefined ? activeParticipants : leaderboardData.length;
+  const predictionsCount = totalPredictions !== undefined ? totalPredictions : 
+    (leaderboardData.reduce((sum, r) => sum + (Number(r['Total Pronosticos'] || 0)), 0) || '—');
+
+  document.getElementById('stat-total-users').textContent = activeCount;
   document.getElementById('stat-played-matches').textContent = played != null ? played : 0;
-  document.getElementById('stat-total-predictions').textContent =
-    leaderboardData.reduce((sum, r) => sum + (Number(r['Total Pronosticos'] || 0)), 0) || '—';
+  document.getElementById('stat-total-predictions').textContent = predictionsCount;
 }
 
-function updatePrizePool(prizePool, activeParticipants) {
+function updatePrizePool(prizePool, activeParticipants, costPerParticipant) {
   const amountEl = document.getElementById('prize-pool-amount');
   const detailsEl = document.getElementById('prize-pool-participants');
   const imgEl = document.getElementById('prize-pool-img');
@@ -988,7 +994,7 @@ function updatePrizePool(prizePool, activeParticipants) {
   const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(prizePool);
   amountEl.textContent = formatted;
 
-  const cost = activeParticipants > 0 ? Math.round(prizePool / activeParticipants) : 10;
+  const cost = costPerParticipant !== undefined ? costPerParticipant : 10;
   detailsEl.textContent = currentLang === 'es' 
     ? `${activeParticipants} participantes registrados ($${cost} c/u)` 
     : `${activeParticipants} registered participants ($${cost} each)`;
