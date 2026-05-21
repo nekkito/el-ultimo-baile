@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    EL ÚLTIMO BAILE - MUNDIAL 2026 | script.js
    Serverless Web Quiniela - Full Logic Engine
    v2.1 - Fix: no-cors save, Recursos paths | 2026-05-20
@@ -894,25 +894,33 @@ function showSaveAlert(msg, type) {
   });
 }
 
-// ─── LEADERBOARD (from Google Sheets) ──────────────────────────
+// ─── LEADERBOARD (via GAS endpoint — no public sheet required) ──────
 async function loadLeaderboard() {
+  const tbody = document.getElementById('leaderboard-body');
+  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-secondary);">
+    <i class="fa-solid fa-spinner fa-spin"></i> Cargando clasificación...
+  </td></tr>`;
   try {
-    const baseUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:csv`;
-    const [resLB, resMatches] = await Promise.all([
-      fetch(`${baseUrl}&sheet=Tabla de Posiciones`).then(r => r.ok ? r.text() : ''),
-      fetch(`${baseUrl}&sheet=Resultados Reales`).then(r => r.ok ? r.text() : '')
-    ]);
+    const res = await fetch(`${CONFIG.GAS_WEB_APP_URL}?action=leaderboard`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message || 'Error GAS');
 
-    leaderboardData = parseCSV(resLB).filter(r => r['Nombre'] && r['Nombre'] !== 'Nombre');
-    matchResultsData = parseCSV(resMatches).filter(r => r['ID Partido'] && r['ID Partido'] !== 'ID Partido');
+    leaderboardData = (json.data || []).map(r => ({
+      'Nombre': r['Nombre'] || r['nombre'] || '—',
+      'Puntos Totales': Number(r['Puntos Totales'] != null ? r['Puntos Totales'] : 0),
+      'Total Pronosticos': Number(r['Total Pronosticos'] || 0)
+    }));
+    matchResultsData = [];
 
     renderLeaderboard(leaderboardData);
-    updateStats();
+    updateStats(json.played || 0);
   } catch (err) {
-    document.getElementById('leaderboard-body').innerHTML =
+    tbody.innerHTML =
       `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-secondary);">
         <i class="fa-solid fa-cloud-xmark"></i> ${t('login-error-network')}
       </td></tr>`;
+    console.error('loadLeaderboard error:', err);
   }
 }
 
@@ -926,8 +934,8 @@ function renderLeaderboard(data) {
   }
   data.forEach((row, idx) => {
     const pos = idx + 1;
-    const name = row['Nombre'] || row['nombre'] || '—';
-    const pts = row['Puntos Totales'] || row['Puntos'] || '0';
+    const name = row['Nombre'] || '—';
+    const pts  = row['Puntos Totales'] !== undefined ? row['Puntos Totales'] : '0';
     const rankClass = pos === 1 ? 'first' : pos === 2 ? 'second' : pos === 3 ? 'third' : '';
     const init = name.charAt(0).toUpperCase();
     const tr = document.createElement('tr');
@@ -955,13 +963,11 @@ function updatePodium(data) {
   });
 }
 
-function updateStats() {
+function updateStats(played) {
   document.getElementById('stat-total-users').textContent = leaderboardData.length;
-  const played = matchResultsData.filter(m => m['Goles Local Real'] !== '' && m['Goles Local Real'] !== undefined).length;
-  document.getElementById('stat-played-matches').textContent = played;
-  document.getElementById('stat-total-predictions').textContent = leaderboardData.reduce((sum, r) => {
-    return sum + (parseInt(r['Total Pronósticos'] || r['Predicciones'] || 0));
-  }, 0) || '—';
+  document.getElementById('stat-played-matches').textContent = played != null ? played : 0;
+  document.getElementById('stat-total-predictions').textContent =
+    leaderboardData.reduce((sum, r) => sum + (Number(r['Total Pronosticos'] || 0)), 0) || '—';
 }
 
 function filterLeaderboard() {
