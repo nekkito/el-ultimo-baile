@@ -308,6 +308,9 @@ let lastCostPerParticipant = 10;
 let cooldownTimer = null;
 let cooldownRemaining = 0;
 let countdownInterval = null;
+let currentSpreadsheetId = null;
+let currentQuinielaType = 'Completa';
+let allGroupMatchesPlayed = false;
 
 // ─── INIT ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -319,7 +322,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const stored = sessionStorage.getItem('quinielaUser');
   if (stored) {
     currentUser = JSON.parse(stored);
+    currentSpreadsheetId = currentUser.spreadsheetId || null;
+    currentQuinielaType = currentUser.type || 'Completa';
     showApp();
+  } else {
+    // Show role selection screen initially
+    showLandingScreen();
   }
 });
 
@@ -388,6 +396,161 @@ function toggleTheme() {
   icon.className = currentTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
 }
 
+// ─── SCREEN TRANSITIONS & ROLE FLOWS ────────────────────────────
+function showLandingScreen() {
+  document.getElementById('landing-screen').classList.remove('hidden');
+  document.getElementById('login-gate').classList.add('hidden');
+  document.getElementById('organizer-gate').classList.add('hidden');
+  document.getElementById('success-overlay').classList.add('hidden');
+}
+
+function showParticipantLogin() {
+  document.getElementById('landing-screen').classList.add('hidden');
+  document.getElementById('login-gate').classList.remove('hidden');
+}
+
+function showOrganizerLogin() {
+  document.getElementById('landing-screen').classList.add('hidden');
+  document.getElementById('organizer-gate').classList.remove('hidden');
+  switchOrgAction('create');
+}
+
+function switchOrgAction(action) {
+  const tabCreate = document.getElementById('org-tab-create');
+  const tabLogin = document.getElementById('org-tab-login');
+  const formCreate = document.getElementById('org-create-form');
+  const formLogin = document.getElementById('org-login-form');
+  
+  if (action === 'create') {
+    tabCreate.classList.add('active');
+    tabLogin.classList.remove('active');
+    formCreate.classList.remove('hidden');
+    formLogin.classList.add('hidden');
+  } else {
+    tabCreate.classList.remove('active');
+    tabLogin.classList.add('active');
+    formCreate.classList.add('hidden');
+    formLogin.classList.remove('hidden');
+  }
+  document.getElementById('org-error').classList.add('hidden');
+}
+
+let createdQuinielaData = null;
+
+async function handleCreateQuiniela(e) {
+  e.preventDefault();
+  const email = document.getElementById('org-create-email').value.trim().toLowerCase();
+  const type = document.querySelector('input[name="org-type"]:checked').value;
+  const btn = document.getElementById('org-create-submit');
+  const errEl = document.getElementById('org-error');
+
+  if (!email) {
+    errEl.textContent = 'Ingresa un correo electrónico.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creando Quiniela...`;
+  errEl.classList.add('hidden');
+
+  try {
+    const url = `${CONFIG.GAS_WEB_APP_URL}?action=createQuiniela&email=${encodeURIComponent(email)}&type=${encodeURIComponent(type)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.status === 'ok') {
+      createdQuinielaData = {
+        name: 'Administrador',
+        email: email,
+        key: data.key,
+        spreadsheetId: data.spreadsheetId,
+        type: data.type,
+        role: 'Organizador'
+      };
+
+      document.getElementById('success-org-key').textContent = data.key;
+      document.getElementById('success-quiniela-type').textContent = data.type === 'Por fase' ? 'Por fase' : 'Completa';
+      document.getElementById('success-sheet-url').href = data.spreadsheetUrl;
+
+      document.getElementById('organizer-gate').classList.add('hidden');
+      document.getElementById('success-overlay').classList.remove('hidden');
+    } else {
+      errEl.textContent = data.message || 'Error al crear la quiniela.';
+      errEl.classList.remove('hidden');
+      btn.disabled = false;
+      btn.innerHTML = `<span>Crear Quiniela</span> <i class="fa-solid fa-plus"></i>`;
+    }
+  } catch (err) {
+    errEl.textContent = 'Error de red: ' + err.message;
+    errEl.classList.remove('hidden');
+    btn.disabled = false;
+    btn.innerHTML = `<span>Crear Quiniela</span> <i class="fa-solid fa-plus"></i>`;
+  }
+}
+
+async function handleOrganizerLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('org-login-email').value.trim().toLowerCase();
+  const key = document.getElementById('org-login-key').value.trim();
+  const btn = document.getElementById('org-login-submit');
+  const errEl = document.getElementById('org-error');
+
+  if (!email || !key) {
+    errEl.textContent = 'Completa todos los campos.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Iniciando sesión...`;
+  errEl.classList.add('hidden');
+
+  try {
+    const url = `${CONFIG.GAS_WEB_APP_URL}?action=validate&email=${encodeURIComponent(email)}&key=${encodeURIComponent(key)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.valid && data.role === 'Organizador') {
+      currentUser = {
+        name: data.nombre,
+        email: email,
+        key: key,
+        spreadsheetId: data.spreadsheetId,
+        type: data.type,
+        role: data.role
+      };
+      currentSpreadsheetId = data.spreadsheetId;
+      currentQuinielaType = data.type;
+
+      sessionStorage.setItem('quinielaUser', JSON.stringify(currentUser));
+      document.getElementById('organizer-gate').classList.add('hidden');
+      showApp();
+    } else {
+      errEl.textContent = data.message || 'Credenciales de organizador inválidas.';
+      errEl.classList.remove('hidden');
+      btn.disabled = false;
+      btn.innerHTML = `<span>Acceder al Panel</span> <i class="fa-solid fa-arrow-right"></i>`;
+    }
+  } catch (err) {
+    errEl.textContent = 'Error de red: ' + err.message;
+    errEl.classList.remove('hidden');
+    btn.disabled = false;
+    btn.innerHTML = `<span>Acceder al Panel</span> <i class="fa-solid fa-arrow-right"></i>`;
+  }
+}
+
+function enterCreatedQuiniela() {
+  if (createdQuinielaData) {
+    currentUser = createdQuinielaData;
+    currentSpreadsheetId = createdQuinielaData.spreadsheetId;
+    currentQuinielaType = createdQuinielaData.type;
+    sessionStorage.setItem('quinielaUser', JSON.stringify(currentUser));
+    document.getElementById('success-overlay').classList.add('hidden');
+    showApp();
+  }
+}
+
 // ─── LOGIN ─────────────────────────────────────────────────────
 async function handleLogin(e) {
   e.preventDefault();
@@ -407,7 +570,7 @@ async function handleLogin(e) {
   errEl.classList.add('hidden');
 
   try {
-    // Use the Apps Script endpoint to validate (avoids CORS from file://)
+    // Use the Apps Script endpoint to validate
     const url = `${CONFIG.GAS_WEB_APP_URL}?action=validate&email=${encodeURIComponent(email)}&key=${encodeURIComponent(key)}&nombre=${encodeURIComponent(name)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('network');
@@ -421,9 +584,21 @@ async function handleLogin(e) {
     }
 
     // Store user and show app
-    currentUser = { name, email, key };
+    currentUser = {
+      name: data.nombre || name,
+      email: email,
+      key: key,
+      spreadsheetId: data.spreadsheetId,
+      type: data.type,
+      role: data.role || 'Participante'
+    };
+    currentSpreadsheetId = data.spreadsheetId;
+    currentQuinielaType = data.type || 'Completa';
+
     sessionStorage.setItem('quinielaUser', JSON.stringify(currentUser));
 
+    // Hide login gate
+    document.getElementById('login-gate').classList.add('hidden');
     showApp();
 
   } catch (err) {
@@ -442,13 +617,17 @@ function showLoginError(msg) {
 function logout() {
   sessionStorage.removeItem('quinielaUser');
   currentUser = null;
+  currentSpreadsheetId = null;
+  currentQuinielaType = 'Completa';
+  allGroupMatchesPlayed = false;
   document.getElementById('app-content').classList.add('hidden');
-  document.getElementById('login-gate').style.display = 'flex';
   document.getElementById('logout-btn').classList.add('hidden');
-  document.getElementById('login-form').reset();
+  if (document.getElementById('login-form')) document.getElementById('login-form').reset();
   // Always hide admin tab on logout
   const adminTab = document.getElementById('tab-admin');
   if (adminTab) adminTab.style.display = 'none';
+  // Return to role selection screen
+  showLandingScreen();
 }
 
 function showApp() {
@@ -456,11 +635,13 @@ function showApp() {
   document.getElementById('app-content').classList.remove('hidden');
   document.getElementById('logout-btn').classList.remove('hidden');
 
-  // ── Admin tab: visible ONLY for the admin account ─────────────
+  // ── Admin tab: visible for Organizador role or the hardcoded admin ─────
   // This runs on fresh login AND on session restore from sessionStorage
   const adminTab = document.getElementById('tab-admin');
   if (adminTab) {
-    adminTab.style.display = (currentUser.email === '2026quiniela2026@gmail.com') ? '' : 'none';
+    const isAdmin = currentUser.email === '2026quiniela2026@gmail.com' ||
+                    currentUser.role === 'Organizador';
+    adminTab.style.display = isAdmin ? '' : 'none';
   }
 
   // Set welcome header
@@ -535,6 +716,7 @@ function switchFixtureStage(stage) {
     standingsPanel.style.display = 'none';
     renderPlayoffMatches();
   }
+  updatePlayoffLockState();
 }
 
 // ─── RENDER GROUP MATCHES ───────────────────────────────────────
@@ -689,6 +871,41 @@ function renderPlayoffMatches() {
     });
   });
   setTimeout(initMatchAnimations, 50);
+  updatePlayoffLockState();
+}
+
+function updatePlayoffLockState() {
+  const container = document.getElementById('matches-container');
+  if (!container) return;
+
+  const existingBanner = document.getElementById('playoff-lock-banner');
+  if (existingBanner) existingBanner.remove();
+
+  if (activeStage === 'playoffs' && currentQuinielaType === 'Por fase' && !allGroupMatchesPlayed) {
+    container.classList.add('playoff-locked');
+    container.querySelectorAll('.goal-btn').forEach(btn => {
+      btn.disabled = true;
+    });
+
+    const banner = document.createElement('div');
+    banner.id = 'playoff-lock-banner';
+    banner.className = 'lock-banner';
+    
+    const msgEs = `🔒 Los Playoffs se desbloquearán una vez que concluyan todos los 72 partidos de la Fase de Grupos.`;
+    const msgEn = `🔒 Knockout Stage will unlock once all 72 Group Stage matches are completed.`;
+    
+    banner.innerHTML = `<i class="fa-solid fa-lock" style="margin-right: 8px;"></i> <span>${currentLang === 'es' ? msgEs : msgEn}</span>`;
+    
+    container.parentNode.insertBefore(banner, container);
+  } else {
+    container.classList.remove('playoff-locked');
+    const expired = checkDeadline();
+    if (!expired) {
+      container.querySelectorAll('.goal-btn').forEach(btn => {
+        btn.disabled = false;
+      });
+    }
+  }
 }
 
 // ─── GOAL CONTROLS ──────────────────────────────────────────────
@@ -828,6 +1045,9 @@ async function saveAllPredictions() {
       ts:      new Date().toISOString(),
       preds:   JSON.stringify(predictions)   // { M_01:{h:2,a:1}, ... }
     });
+    if (currentSpreadsheetId) {
+      params.set('spreadsheetId', currentSpreadsheetId);
+    }
 
     const res = await fetch(`${CONFIG.GAS_WEB_APP_URL}?${params.toString()}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -904,21 +1124,30 @@ function showSaveAlert(msg, type) {
 // ─── LEADERBOARD (via GAS endpoint — no public sheet required) ──────
 async function loadLeaderboard() {
   const tbody = document.getElementById('leaderboard-body');
-  tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary);">
     <i class="fa-solid fa-spinner fa-spin"></i> Cargando clasificación...
   </td></tr>`;
   try {
-    const res = await fetch(`${CONFIG.GAS_WEB_APP_URL}?action=leaderboard`);
+    let url = `${CONFIG.GAS_WEB_APP_URL}?action=leaderboard`;
+    if (currentSpreadsheetId) {
+      url += `&spreadsheetId=${currentSpreadsheetId}`;
+    }
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     if (json.status !== 'ok') throw new Error(json.message || 'Error GAS');
 
     leaderboardData = (json.data || []).map(r => ({
       'Nombre': r['Nombre'] || r['nombre'] || '—',
+      'Puntos Eliminatoria': Number(r['Puntos Eliminatoria'] != null ? r['Puntos Eliminatoria'] : 0),
+      'Puntos Segunda Fase': Number(r['Puntos Segunda Fase'] != null ? r['Puntos Segunda Fase'] : 0),
       'Puntos Totales': Number(r['Puntos Totales'] != null ? r['Puntos Totales'] : 0),
       'Total Pronosticos': Number(r['Total Pronosticos'] || 0)
     }));
     matchResultsData = [];
+
+    allGroupMatchesPlayed = (json.playedGroupMatches === 72);
+    updatePlayoffLockState();
 
     renderLeaderboard(leaderboardData);
 
@@ -930,7 +1159,7 @@ async function loadLeaderboard() {
     updatePrizePool(lastPrizePool, lastActiveParticipants, lastCostPerParticipant);
   } catch (err) {
     tbody.innerHTML =
-      `<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">
+      `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary);">
         <i class="fa-solid fa-cloud-xmark"></i> ${t('login-error-network')}
       </td></tr>`;
     console.error('loadLeaderboard error:', err);
@@ -942,20 +1171,27 @@ function renderLeaderboard(data) {
   tbody.innerHTML = '';
   updatePodium(data);
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">Sin registros disponibles.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary);">Sin registros disponibles.</td></tr>`;
     return;
   }
   data.forEach((row, idx) => {
     const pos = idx + 1;
     const name = row['Nombre'] || '—';
-    const pts  = row['Puntos Totales'] !== undefined ? row['Puntos Totales'] : '0';
+    const ptsElim = row['Puntos Eliminatoria'] !== undefined ? row['Puntos Eliminatoria'] : '0';
+    const ptsSeg = row['Puntos Segunda Fase'] !== undefined ? row['Puntos Segunda Fase'] : '0';
+    const ptsTot = row['Puntos Totales'] !== undefined ? row['Puntos Totales'] : '0';
     const rankClass = pos === 1 ? 'first' : pos === 2 ? 'second' : pos === 3 ? 'third' : '';
     const init = name.charAt(0).toUpperCase();
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.title = currentLang === 'es' ? 'Ver pronósticos detallados' : 'View detailed predictions';
+    tr.onclick = () => showPlayerDetails(name);
     tr.innerHTML = `
       <td style="text-align:center"><span class="rank-num ${rankClass}">${pos}</span></td>
       <td><div class="player-info-cell"><div class="player-avatar-mini">${init}</div><span>${name}</span></div></td>
-      <td class="points-cell">${pts} pts</td>`;
+      <td style="text-align:center">${ptsElim}</td>
+      <td style="text-align:center">${ptsSeg}</td>
+      <td class="points-cell" style="text-align:center;font-weight:bold;color:var(--accent-gold);">${ptsTot} pts</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -1031,7 +1267,10 @@ async function showPlayerDetails(name) {
   openModal('modal-details');
 
   try {
-    const url = `${CONFIG.GAS_WEB_APP_URL}?action=playerDetail&name=${encodeURIComponent(name)}`;
+    let url = `${CONFIG.GAS_WEB_APP_URL}?action=playerDetail&name=${encodeURIComponent(name)}`;
+    if (currentSpreadsheetId) {
+      url += `&spreadsheetId=${currentSpreadsheetId}`;
+    }
     const res = await fetch(url).then(r => r.json());
     if (res.status === 'ok') {
       document.getElementById('detail-total-points').textContent = res.totalPoints;
@@ -1318,10 +1557,13 @@ async function adminQueryKey() {
   queryBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando...';
 
   try {
-    const url = `${CONFIG.GAS_WEB_APP_URL}?action=getKey` +
+    let url = `${CONFIG.GAS_WEB_APP_URL}?action=getKey` +
       `&adminEmail=${encodeURIComponent(currentUser.email)}` +
       `&adminKey=${encodeURIComponent(currentUser.key)}` +
       `&targetEmail=${encodeURIComponent(targetEmail)}`;
+    if (currentSpreadsheetId) {
+      url += `&spreadsheetId=${currentSpreadsheetId}`;
+    }
 
     const res  = await fetch(url);
     const data = await res.json();
@@ -1380,7 +1622,10 @@ async function refreshAdminStats() {
   }
 
   try {
-    const url  = `${CONFIG.GAS_WEB_APP_URL}?action=debug`;
+    let url = `${CONFIG.GAS_WEB_APP_URL}?action=debug`;
+    if (currentSpreadsheetId) {
+      url += `&spreadsheetId=${currentSpreadsheetId}`;
+    }
     const res  = await fetch(url);
     const data = await res.json();
 

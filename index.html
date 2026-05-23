@@ -37,9 +37,9 @@
         </button>
     </div>
 
-    <!-- LOGIN GATEWAY / WELCOME OVERLAY -->
-    <div id="login-gate" class="login-overlay">
-        <div class="login-card card">
+    <!-- LANDING SCREEN: ROLE SELECTION -->
+    <div id="landing-screen" class="login-overlay">
+        <div class="login-card card text-center select-role-card">
             <div class="login-header">
                 <div class="legends-avatars">
                     <div class="legend-avatar messi" title="Messi"></div>
@@ -50,8 +50,38 @@
                 <p class="logo-subtitle" data-i18n="login-subtitle">Mundial 2026 • Quiniela IA de Leyendas</p>
             </div>
             
-            <div id="login-error" class="alert alert-danger hidden"></div>
+            <p class="role-instructions mb-4 text-glow">Selecciona tu rol para continuar</p>
+            
+            <div class="role-selection-grid">
+                <div class="role-option-card card" onclick="showParticipantLogin()">
+                    <div class="role-icon"><i class="fa-solid fa-user-pen"></i></div>
+                    <h3 class="outfit">Participante</h3>
+                    <p>Ingresa tus pronósticos en una quiniela existente con tu key.</p>
+                </div>
+                <div class="role-option-card card" onclick="showOrganizerLogin()">
+                    <div class="role-icon"><i class="fa-solid fa-crown"></i></div>
+                    <h3 class="outfit">Organizador</h3>
+                    <p>Crea una nueva quiniela o administra tu quiniela existente.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- LOGIN GATEWAY / WELCOME OVERLAY (PARTICIPANT) -->
+    <div id="login-gate" class="login-overlay hidden">
+        <div class="login-card card">
+            <div class="login-header">
+                <div class="legends-avatars">
+                    <div class="legend-avatar messi" title="Messi"></div>
+                    <div class="legend-avatar cr7" title="Cristiano Ronaldo"></div>
+                    <div class="legend-avatar neymar" title="Neymar Jr"></div>
+                </div>
+                <h1 class="logo-title outfit" data-i18n="login-title">El Último Baile</h1>
+                <p class="logo-subtitle">Acceso de Participante</p>
+            </div>
+            
+            <div id="login-error" class="alert alert-danger hidden"></div>
+ 
             <form id="login-form" onsubmit="handleLogin(event)">
                 <div class="input-group">
                     <label for="login-name" data-i18n="label-name">Nombre Completo</label>
@@ -60,7 +90,7 @@
                         <input type="text" id="login-name" required placeholder="Ej. Lionel Messi">
                     </div>
                 </div>
-
+ 
                 <div class="input-group">
                     <label for="login-email" data-i18n="label-email">Correo Electrónico</label>
                     <div class="input-wrapper">
@@ -68,7 +98,7 @@
                         <input type="email" id="login-email" required placeholder="correo@ejemplo.com">
                     </div>
                 </div>
-
+ 
                 <div class="input-group">
                     <label for="login-key" data-i18n="label-key">Key de Acceso</label>
                     <div class="input-wrapper">
@@ -76,15 +106,133 @@
                         <input type="password" id="login-key" required placeholder="Clave de 4 caracteres">
                     </div>
                 </div>
-
+ 
                 <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block">
                     <span data-i18n="btn-enter">Ingresar a la Quiniela</span> <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
+ 
+            <button class="btn btn-secondary btn-block mt-3" onclick="showLandingScreen()">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+            </button>
 
             <div class="login-footer">
                 <p data-i18n="login-info">Para obtener una clave de acceso, contacta al administrador.</p>
             </div>
+        </div>
+    </div>
+
+    <!-- ORGANIZER GATEWAY -->
+    <div id="organizer-gate" class="login-overlay hidden">
+        <div class="login-card card">
+            <div class="login-header">
+                <div class="legends-avatars">
+                    <div class="legend-avatar messi" title="Messi"></div>
+                    <div class="legend-avatar cr7" title="Cristiano Ronaldo"></div>
+                    <div class="legend-avatar neymar" title="Neymar Jr"></div>
+                </div>
+                <h1 class="logo-title outfit"><i class="fa-solid fa-crown text-gold"></i> Organizador</h1>
+                <p class="logo-subtitle">Crea o administra tu quiniela</p>
+            </div>
+            
+            <div id="org-error" class="alert alert-danger hidden"></div>
+            
+            <div class="org-tabs mb-4">
+                <button id="org-tab-create" class="org-tab-btn active" onclick="switchOrgAction('create')">Crear Nueva</button>
+                <button id="org-tab-login" class="org-tab-btn" onclick="switchOrgAction('login')">Ingresar al Panel</button>
+            </div>
+
+            <!-- CREATE QUINIELA FORM -->
+            <form id="org-create-form" onsubmit="handleCreateQuiniela(event)">
+                <div class="input-group">
+                    <label for="org-create-email">Correo del Organizador</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="org-create-email" required placeholder="tu-correo@ejemplo.com">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Tipo de Quiniela</label>
+                    <div class="radio-group-vertical">
+                        <label class="radio-label">
+                            <input type="radio" name="org-type" value="Completa" checked>
+                            <span class="radio-custom-box">
+                                <strong>Completa</strong>
+                                <small>Predice todo el torneo antes del inicio.</small>
+                            </span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="org-type" value="Por fase">
+                            <span class="radio-custom-box">
+                                <strong>Por fase</strong>
+                                <small>Primero Fase de Grupos, luego Playoffs.</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" id="org-create-submit" class="btn btn-primary btn-block">
+                    <span>Crear Quiniela</span> <i class="fa-solid fa-plus"></i>
+                </button>
+            </form>
+
+            <!-- ACCESS PANEL FORM -->
+            <form id="org-login-form" class="hidden" onsubmit="handleOrganizerLogin(event)">
+                <div class="input-group">
+                    <label for="org-login-email">Correo del Organizador</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="org-login-email" required placeholder="tu-correo@ejemplo.com">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="org-login-key">Key de Organizador</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" id="org-login-key" required placeholder="Ej. ORG-XXXX">
+                    </div>
+                </div>
+
+                <button type="submit" id="org-login-submit" class="btn btn-primary btn-block">
+                    <span>Acceder al Panel</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <button class="btn btn-secondary btn-block mt-3" onclick="showLandingScreen()">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+            </button>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL FOR NEW QUINIELA -->
+    <div id="success-overlay" class="login-overlay hidden">
+        <div class="login-card card text-center success-card">
+            <div class="success-icon-wrapper">
+                <i class="fa-solid fa-circle-check text-success"></i>
+            </div>
+            <h2 class="outfit mt-3" style="color: var(--accent-gold);">¡Quiniela Creada!</h2>
+            <p class="mt-2 text-secondary" style="font-size:0.85rem;">Copia estos datos. La Key es tu clave de administrador.</p>
+            
+            <div class="success-details-box mt-4">
+                <div class="detail-item">
+                    <span>Key de Organizador:</span>
+                    <strong id="success-org-key" class="text-glow" style="color:var(--accent-gold); font-size:1.2rem;">ORG-XXXX</strong>
+                </div>
+                <div class="detail-item mt-2">
+                    <span>Tipo de Quiniela:</span>
+                    <strong id="success-quiniela-type" style="color:#fff;">Por fase</strong>
+                </div>
+                <div class="detail-item mt-3">
+                    <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.25rem;">Google Sheet para ver datos:</span>
+                    <a id="success-sheet-url" href="#" target="_blank" class="sheet-link-url" style="color:var(--primary); text-decoration:underline;">Abrir Google Sheet <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block mt-4" onclick="enterCreatedQuiniela()">
+                Comenzar a Administrar <i class="fa-solid fa-arrow-right"></i>
+            </button>
         </div>
     </div>
 
@@ -342,9 +490,11 @@
                         <table class="leaderboard-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 15%; text-align: center;" data-i18n="th-rank">Puesto</th>
+                                    <th style="width: 10%; text-align: center;" data-i18n="th-rank">Puesto</th>
                                     <th style="text-align: left;" data-i18n="th-name">Jugador</th>
-                                    <th style="width: 30%; text-align: center;" data-i18n="th-points">Puntos</th>
+                                    <th style="width: 20%; text-align: center;">Pts Grupos</th>
+                                    <th style="width: 20%; text-align: center;">Pts Playoffs</th>
+                                    <th style="width: 20%; text-align: center;" data-i18n="th-points">Total</th>
                                 </tr>
                             </thead>
                             <tbody id="leaderboard-body">
