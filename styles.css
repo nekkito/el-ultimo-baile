@@ -1122,6 +1122,7 @@ p { line-height: 1.6; }
 .rank-num.first { background: var(--gradient-gold); color: #1a1000; }
 .rank-num.second { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
 .rank-num.third { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+.rank-num.unranked { background: transparent; color: var(--text-secondary); font-weight: normal; }
 
 .player-info-cell { display: flex; align-items: center; gap: 0.7rem; }
 .player-avatar-mini {

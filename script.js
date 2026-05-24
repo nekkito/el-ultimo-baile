@@ -1174,20 +1174,40 @@ function renderLeaderboard(data) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary);">Sin registros disponibles.</td></tr>`;
     return;
   }
+  
+  let currentRank = 1;
+  let prevPoints = -1;
+
   data.forEach((row, idx) => {
-    const pos = idx + 1;
     const name = row['Nombre'] || '—';
     const ptsElim = row['Puntos Eliminatoria'] !== undefined ? row['Puntos Eliminatoria'] : '0';
     const ptsSeg = row['Puntos Segunda Fase'] !== undefined ? row['Puntos Segunda Fase'] : '0';
-    const ptsTot = row['Puntos Totales'] !== undefined ? row['Puntos Totales'] : '0';
-    const rankClass = pos === 1 ? 'first' : pos === 2 ? 'second' : pos === 3 ? 'third' : '';
+    const ptsTot = row['Puntos Totales'] !== undefined ? Number(row['Puntos Totales']) : 0;
+
+    if (idx > 0) {
+      if (ptsTot < prevPoints) {
+        currentRank = idx + 1;
+      }
+    }
+    prevPoints = ptsTot;
+
+    let rankDisplay = currentRank;
+    let rankClass = '';
+
+    if (ptsTot > 0) {
+      rankClass = currentRank === 1 ? 'first' : currentRank === 2 ? 'second' : currentRank === 3 ? 'third' : '';
+    } else {
+      rankDisplay = '—';
+      rankClass = 'unranked';
+    }
+
     const init = name.charAt(0).toUpperCase();
     const tr = document.createElement('tr');
     tr.style.cursor = 'pointer';
     tr.title = currentLang === 'es' ? 'Ver pronósticos detallados' : 'View detailed predictions';
     tr.onclick = () => showPlayerDetails(name);
     tr.innerHTML = `
-      <td style="text-align:center"><span class="rank-num ${rankClass}">${pos}</span></td>
+      <td style="text-align:center"><span class="rank-num ${rankClass}">${rankDisplay}</span></td>
       <td><div class="player-info-cell"><div class="player-avatar-mini">${init}</div><span>${name}</span></div></td>
       <td style="text-align:center">${ptsElim}</td>
       <td style="text-align:center">${ptsSeg}</td>
@@ -1199,14 +1219,19 @@ function renderLeaderboard(data) {
 function updatePodium(data) {
   [1,2,3].forEach(i => {
     const el = document.getElementById(`podium-${i}`);
+    if (!el) return;
     const row = data[i-1];
-    if (row) {
+    if (row && Number(row['Puntos Totales'] || 0) > 0) {
       const name = row['Nombre'] || row['nombre'] || '—';
       const pts = row['Puntos Totales'] || row['Puntos'] || '0';
       const init = name.charAt(0).toUpperCase();
       el.querySelector('.avatar-holder').textContent = init;
       el.querySelector('.user-email').textContent = name;
       el.querySelector('.user-points').textContent = `${pts} pts`;
+    } else {
+      el.querySelector('.avatar-holder').textContent = '--';
+      el.querySelector('.user-email').textContent = '—';
+      el.querySelector('.user-points').textContent = '0 pts';
     }
   });
 }
