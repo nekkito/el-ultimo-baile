@@ -451,6 +451,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set welcome header
     updateUserHeaderUI();
     
+    // Check and apply pending invites on session restore
+    checkAndApplyPendingInvite().then(() => {
+      loadUserPrivateLeagues();
+    });
+    
     // Load predictions
     const saved = localStorage.getItem(`quinielaPreds_${currentUser.email}`);
     if (saved) predictions = JSON.parse(saved);
@@ -978,6 +983,8 @@ function updateUserHeaderUI() {
 
     // Update context toggle
     updateContextToggleBtn();
+    const joinBtn = document.getElementById('join-quiniela-btn');
+    if (joinBtn) joinBtn.style.display = 'none';
     return;
   }
 
@@ -1026,6 +1033,12 @@ function updateUserHeaderUI() {
 
   // Update context toggle
   updateContextToggleBtn();
+  
+  // Show join quiniela button for logged-in users
+  const joinBtn = document.getElementById('join-quiniela-btn');
+  if (joinBtn) {
+    joinBtn.style.display = 'inline-flex';
+  }
 }
 
 function showApp() {
@@ -5497,6 +5510,9 @@ function processInviteLink() {
     localStorage.setItem('pendingInviteCode', inviteCode);
     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+    if (currentUser) {
+      checkAndApplyPendingInvite();
+    }
   }
 }
 processInviteLink();
@@ -5765,14 +5781,7 @@ function updateContextToggleBtn() {
     return;
   }
   
-  const isVip = currentUser.rango === 'VIP';
-  if (!isVip) {
-    toggleBtn.style.display = 'none';
-    return;
-  }
-  
-  const adminLeague = userPrivateLeagues.find(l => l.rol === 'Organizador');
-  if (!adminLeague) {
+  if (userPrivateLeagues.length === 0) {
     toggleBtn.style.display = 'none';
     return;
   }
@@ -5780,9 +5789,14 @@ function updateContextToggleBtn() {
   toggleBtn.style.display = 'inline-flex';
   
   if (activeSpreadsheetId === 'GLOBAL_LIGA_2026') {
-    const name = adminLeague.nombreLiga || `Quiniela "${currentUser.name}"`;
-    toggleBtn.innerHTML = `<i class="fa-solid fa-shuffle"></i> Ver "${name}"`;
-    toggleBtn.onclick = () => switchQuinielaContext(adminLeague.quinielaId);
+    if (userPrivateLeagues.length === 1) {
+      const league = userPrivateLeagues[0];
+      toggleBtn.innerHTML = `<i class="fa-solid fa-shuffle"></i> Ver "${league.nombreLiga}"`;
+      toggleBtn.onclick = () => switchQuinielaContext(league.quinielaId);
+    } else {
+      toggleBtn.innerHTML = `<i class="fa-solid fa-shuffle"></i> Cambiar Quiniela`;
+      toggleBtn.onclick = () => promptSwitchQuinielaContext();
+    }
   } else {
     toggleBtn.innerHTML = `<i class="fa-solid fa-shuffle"></i> Ver Quiniela Oficial`;
     toggleBtn.onclick = () => switchQuinielaContext('GLOBAL_LIGA_2026');
@@ -5806,5 +5820,75 @@ function updateAdminTabVisibility() {
     if (activeSec && activeSec.id === 'sec-admin-quiniela') {
       switchTab('predictions');
     }
+  }
+}
+
+
+async function promptJoinPrivateQuiniela() {
+  if (!currentUser) return;
+  const inviteCode = prompt('Ingrese el código de invitación de la quiniela (Ej: Q-XXXX):');
+  if (!inviteCode) return;
+  
+  const code = inviteCode.trim().toUpperCase();
+  if (!code.startsWith('Q-')) {
+    alert('El código de invitación debe empezar con "Q-" (Ej. Q-9HK6).');
+    return;
+  }
+  
+  const btn = document.getElementById('join-quiniela-btn');
+  let originalHtml = '';
+  if (btn) {
+    originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uniéndose...';
+  }
+  
+  try {
+    const res = await fetch(`${CONFIG.API_URL}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'joinPrivateQuiniela',
+        email: currentUser.email,
+        key: currentUser.key,
+        spreadsheetId: code
+      })
+    }).then(r => r.json());
+    
+    if (res.status === 'ok') {
+      alert('¡Te has unido exitosamente a la quiniela privada!');
+      await loadUserPrivateLeagues();
+    } else {
+      alert('Error al unirse: ' + res.message);
+    }
+  } catch (err) {
+    console.error('Error joining private quiniela:', err);
+    alert('Error de red al unirse a la quiniela.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+  }
+}
+
+function promptSwitchQuinielaContext() {
+  let promptMsg = 'Seleccione la quiniela que desea ver:\n0: Quiniela Oficial\n';
+  userPrivateLeagues.forEach((league, idx) => {
+    promptMsg += `${idx + 1}: ${league.nombreLiga}\n`;
+  });
+  
+  const val = prompt(promptMsg);
+  if (val === null) return;
+  
+  const num = parseInt(val.trim());
+  if (isNaN(num)) return;
+  
+  if (num === 0) {
+    switchQuinielaContext('GLOBAL_LIGA_2026');
+  } else if (num > 0 && num <= userPrivateLeagues.length) {
+    switchQuinielaContext(userPrivateLeagues[num - 1].quinielaId);
+  } else {
+    alert('Opción inválida.');
   }
 }
