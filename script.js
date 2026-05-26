@@ -7,8 +7,10 @@
 // ─── CONFIG ───────────────────────────────────────────────────
 const CONFIG = {
   API_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' || !window.location.hostname
-    ? 'http://localhost:5000/api' 
-    : '/api',
+    ? 'http://localhost:5000/api'
+    : /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(window.location.hostname)
+      ? `http://${window.location.hostname}:5000/api`
+      : '/api',
   DEADLINE: new Date('2026-06-11T15:00:00-04:00'), // June 11, 2026 15:00 EST (UTC-4 in summer)
   COOLDOWN_SECONDS: 60,
   POLLING_INTERVAL: 6000
