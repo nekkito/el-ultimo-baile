@@ -3297,6 +3297,41 @@ const WALLETS = {
 };
 
 function openCheckoutModal() {
+  openVipTermsModal();
+}
+
+function openVipTermsModal() {
+  const modal = document.getElementById('vip-terms-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    const checkbox = document.getElementById('accept-vip-terms-checkbox');
+    if (checkbox) checkbox.checked = false;
+    const proceedBtn = document.getElementById('vip-terms-proceed-btn');
+    if (proceedBtn) proceedBtn.disabled = true;
+  }
+}
+
+function closeVipTermsModal() {
+  const modal = document.getElementById('vip-terms-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function toggleVipTermsAccept() {
+  const checkbox = document.getElementById('accept-vip-terms-checkbox');
+  const proceedBtn = document.getElementById('vip-terms-proceed-btn');
+  if (checkbox && proceedBtn) {
+    proceedBtn.disabled = !checkbox.checked;
+  }
+}
+
+function proceedToCheckoutPayment() {
+  closeVipTermsModal();
+  openActualCheckoutModal();
+}
+
+function openActualCheckoutModal() {
   const modal = document.getElementById('checkout-modal');
   if (modal) {
     modal.style.display = 'flex';

@@ -1176,6 +1176,163 @@
                 </div>
             </section>
 
+            <!-- MODAL: TERMINOS Y CONDICIONES PASE VIP -->
+            <div id="vip-terms-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeVipTermsModal()">
+                <div class="modal-card card vip-terms-card" style="max-width:600px; background:#0a121c; border:2px solid var(--accent-gold); box-shadow: 0 0 35px rgba(212,175,55,0.2);">
+                    <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <h3 class="outfit" style="color: var(--accent-gold); margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-file-signature"></i> Contrato de Pase VIP
+                        </h3>
+                        <button class="modal-close-btn" onclick="closeVipTermsModal()" style="background: none; border: none; color: var(--text-secondary); font-size: 1.6rem; cursor: pointer; line-height: 1;">&times;</button>
+                    </div>
+                    
+                    <div class="vip-terms-body" style="padding: 1.5rem; overflow-y: auto; max-height: 55vh; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary);">
+                        <div class="text-center mb-4">
+                            <h4 class="outfit text-glow" style="color: #fff; font-size: 1.15rem; margin: 0 0 0.5rem 0;">PASE VIP</h4>
+                            <p style="color: var(--accent-gold); font-size: 0.8rem; letter-spacing: 1px; font-weight: 700; margin: 0; text-transform: uppercase;">
+                                Ecosistema Integral de Inteligencia, Debate y Coleccionismo · Mundial 2026
+                            </p>
+                        </div>
+                        
+                        <p class="mb-4">
+                            Bienvenido al documento instructivo oficial del Pase VIP de <strong>FutbolBeo</strong>. Este pase exclusivo transforma la experiencia de la Copa del Mundo 2026, ofreciendo a los usuarios avanzados herramientas analíticas de vanguardia basadas en IA, un espacio de interacción social de élite, una competencia de pronósticos con recompensas reales y una colección digital única.
+                        </p>
+
+                        <div class="terms-section mb-4">
+                            <h5 class="outfit" style="color: #fff; font-size: 0.95rem; margin-bottom: 0.75rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.25rem;">
+                                <span style="color:var(--accent-gold); margin-right: 0.25rem;">1.</span> Muro de Debate VIP (Red Social Interna)
+                            </h5>
+                            <p>El canal definitivo para la comunidad futbolística más selecta. Diseñado para mitigar el ruido de las redes sociales convencionales y priorizar el debate de alta calidad técnica e interactiva inmediatamente después del silbatazo final.</p>
+                            <ul class="custom-terms-list" style="list-style: none; padding-left: 0; margin-top: 0.5rem;">
+                                <li style="margin-bottom:0.4rem; display:flex; gap:0.5rem; align-items:flex-start;"><i class="fa-solid fa-circle-check text-gold" style="font-size:0.75rem; margin-top:0.3rem;"></i> <span><strong>Salas Post-Partido Automatizadas:</strong> Al concluir cada uno de los 104 encuentros del Mundial, la plataforma habilita un hilo exclusivo de discusión.</span></li>
+                                <li style="margin-bottom:0.4rem; display:flex; gap:0.5rem; align-items:flex-start;"><i class="fa-solid fa-circle-check text-gold" style="font-size:0.75rem; margin-top:0.3rem;"></i> <span><strong>Interacción e Impacto:</strong> Los usuarios VIP pueden calificar el rendimiento táctico, votar por el "MVP del Partido" y compartir análisis en profundidad sin spam.</span></li>
+                                <li style="margin-bottom:0.4rem; display:flex; gap:0.5rem; align-items:flex-start;"><i class="fa-solid fa-circle-check text-gold" style="font-size:0.75rem; margin-top:0.3rem;"></i> <span><strong>Diseño Optimizado:</strong> Interfaz limpia y estilizada que maximiza la fluidez de lectura y promueve el intercambio organizado de opiniones.</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="terms-section mb-4">
+                            <h5 class="outfit" style="color: #fff; font-size: 0.95rem; margin-bottom: 0.75rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.25rem;">
+                                <span style="color:var(--accent-gold); margin-right: 0.25rem;">2.</span> Analítica VIP impulsada por Inteligencia Artificial
+                            </h5>
+                            <p>Nuestra IA avanzada procesa en tiempo real millones de variables y datos históricos para dotar a los miembros VIP de una ventaja estratégica única en sus predicciones.</p>
+                            <ul class="custom-terms-list" style="list-style: none; padding-left: 0; margin-top: 0.5rem;">
+                                <li style="margin-bottom:0.4rem; display:flex; gap:0.5rem; align-items:flex-start;"><i class="fa-solid fa-robot text-gold" style="font-size:0.75rem; margin-top:0.3rem;"></i> <span><strong>Interpretación de Historiales:</strong> Análisis pormenorizado de enfrentamientos previos directos, rachas históricas en copas mundiales y dinámicas recientes de rendimiento.</span></li>
+                                <li style="margin-bottom:0.4rem; display:flex; gap:0.5rem; align-items:flex-start;"><i class="fa-solid fa-robot text-gold" style="font-size:0.75rem; margin-top:0.3rem;"></i> <span><strong>Curiosidades y Datos Ocultos:</strong> Hallazgos estadísticos singulares sobre jugadores clave, condiciones contextuales y registros históricos que enriquecen los argumentos de debate.</span></li>
+                                <li style="margin-bottom:0.4rem; display:flex; gap:0.5rem; align-items:flex-start;"><i class="fa-solid fa-robot text-gold" style="font-size:0.75rem; margin-top:0.3rem;"></i> <span><strong>Modelos Predictivos:</strong> Proyecciones probabilísticas de posibles resultados basadas en el estado de forma actual de las plantillas y variables tácticas complejas.</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="terms-section mb-4">
+                            <h5 class="outfit" style="color: #fff; font-size: 0.95rem; margin-bottom: 0.75rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.25rem;">
+                                <span style="color:var(--accent-gold); margin-right: 0.25rem;">3.</span> Tabla Comparativa de Analistas VIP (Ranking y Premios)
+                            </h5>
+                            <p>La plataforma fomenta una competencia directa y transparente entre los usuarios. Esta sección despliega el rendimiento en tiempo real de los participantes que demuestran su conocimiento en la quiniela del torneo.</p>
+                            
+                            <div style="background: rgba(212, 175, 55, 0.1); border-left: 3px solid var(--accent-gold); padding: 0.75rem; border-radius: 4px; margin: 0.75rem 0;" class="mb-3">
+                                <strong style="color: #fff;"><i class="fa-solid fa-trophy text-gold"></i> EL GRAN PREMIO:</strong>
+                                <p style="margin: 0.25rem 0 0 0; color: #e2e8f0;">¡El 50% de la recaudación total de las suscripciones al Pase VIP se distribuirá directamente entre los mejores Analistas VIP al finalizar el Mundial!</p>
+                            </div>
+
+                            <p style="font-weight:700; color:#fff; margin-bottom:0.5rem;"><i class="fa-solid fa-table-list text-gold"></i> Estructura del Ranking en la Web (Ejemplo):</p>
+                            <div class="table-responsive mb-3" style="border: 1px solid var(--border-color); border-radius: 4px;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
+                                    <thead>
+                                        <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border-color);">
+                                            <th style="padding: 0.4rem; text-align: center;">Pos.</th>
+                                            <th style="padding: 0.4rem; text-align: left;">Analista VIP (Usuario)</th>
+                                            <th style="padding: 0.4rem; text-align: center;">Últimos 5 Resultados</th>
+                                            <th style="padding: 0.4rem; text-align: center;">Aciertos Exactos</th>
+                                            <th style="padding: 0.4rem; text-align: center;">Puntos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="border-bottom: 1px solid var(--border-color);">
+                                            <td style="padding: 0.4rem; text-align: center; font-weight:700; color:var(--accent-gold);">1°</td>
+                                            <td style="padding: 0.4rem; font-weight:600;">ReyDelBalon_26</td>
+                                            <td style="padding: 0.4rem; text-align: center; color:var(--text-muted); font-size:0.7rem;">🟢🟢🟢🔴🟢</td>
+                                            <td style="padding: 0.4rem; text-align: center;">14</td>
+                                            <td style="padding: 0.4rem; text-align: center; font-weight:700; color:#fff;">185</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid var(--border-color);">
+                                            <td style="padding: 0.4rem; text-align: center; font-weight:700;">2°</td>
+                                            <td style="padding: 0.4rem; font-weight:600;">CyborgTactics</td>
+                                            <td style="padding: 0.4rem; text-align: center; color:var(--text-muted); font-size:0.7rem;">🟢🔴🟢🟢🔴</td>
+                                            <td style="padding: 0.4rem; text-align: center;">12</td>
+                                            <td style="padding: 0.4rem; text-align: center; font-weight:700; color:#fff;">172</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid var(--border-color);">
+                                            <td style="padding: 0.4rem; text-align: center; font-weight:700;">3°</td>
+                                            <td style="padding: 0.4rem; font-weight:600;">TioFutbolNeo</td>
+                                            <td style="padding: 0.4rem; text-align: center; color:var(--text-muted); font-size:0.7rem;">🔴🟢🟢🟢🟢</td>
+                                            <td style="padding: 0.4rem; text-align: center;">10</td>
+                                            <td style="padding: 0.4rem; text-align: center; font-weight:700; color:#fff;">168</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 0.4rem; text-align: center; font-weight:700;">4°</td>
+                                            <td style="padding: 0.4rem; font-weight:600;">MateaPredicts</td>
+                                            <td style="padding: 0.4rem; text-align: center; color:var(--text-muted); font-size:0.7rem;">🟢🟢🔴🔴🟢</td>
+                                            <td style="padding: 0.4rem; text-align: center;">11</td>
+                                            <td style="padding: 0.4rem; text-align: center; font-weight:700; color:#fff;">155</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p style="font-weight:700; color:#fff; margin-bottom:0.5rem;"><i class="fa-solid fa-list-check text-gold"></i> Lógica de Puntuación Automatizada:</p>
+                            <ul style="list-style: none; padding-left: 0;">
+                                <li style="margin-bottom:0.3rem;"><i class="fa-regular fa-star text-gold" style="margin-right:0.4rem;"></i><strong>Resultado Exacto:</strong> 5 Puntos si el marcador coincide idénticamente con el pronóstico.</li>
+                                <li style="margin-bottom:0.3rem;"><i class="fa-regular fa-star text-gold" style="margin-right:0.4rem;"></i><strong>Tendencia (Ganador/Empate):</strong> 3 Puntos si se acierta al ganador o el empate pero con diferente marcador.</li>
+                                <li style="margin-bottom:0.3rem;"><i class="fa-regular fa-star text-gold" style="margin-right:0.4rem;"></i><strong>Bonificación por Goles:</strong> 1 Punto adicional si se predice con exactitud la cantidad de goles anotados por una selección individual.</li>
+                            </ul>
+                        </div>
+
+                        <div class="terms-section mb-4">
+                            <h5 class="outfit" style="color: #fff; font-size: 0.95rem; margin-bottom: 0.75rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.25rem;">
+                                <span style="color:var(--accent-gold); margin-right: 0.25rem;">4.</span> Coleccionable Especial: "El Último Baile"
+                            </h5>
+                            <p>La joya artística y emocional de FutbolBeo. Un set exclusivo compuesto por 48 cartas digitales que rinden homenaje a los jugadores más esperados, leyendas consolidadas y las máximas figuras de cada una de las naciones clasificadas al certamen.</p>
+                            <ul style="list-style: none; padding-left: 0; margin-top:0.5rem; margin-bottom:1rem;">
+                                <li style="margin-bottom:0.4rem;"><i class="fa-solid fa-palette text-gold" style="margin-right:0.4rem;"></i><strong>Estética Coleccionable:</strong> Diseños de personajes con ropa en colores fijos, rasgos consistentes, inspirados en un estilo anime/chibi futurista con sutiles detalles cyborg integrados armónicamente.</li>
+                                <li style="margin-bottom:0.4rem;"><i class="fa-solid fa-box-open text-gold" style="margin-right:0.4rem;"></i><strong>Distribución de Sobres:</strong> Los suscriptores VIP reciben un pack de bienvenida de forma inmediata y desbloquean sobres adicionales logrando aciertos en el ranking competitivo.</li>
+                            </ul>
+
+                            <p style="font-weight:700; color:#fff; margin-bottom:0.5rem;"><i class="fa-solid fa-map-location-dot text-gold"></i> Distribución Geográfica de las 48 Cartas (12 Grupos):</p>
+                            <div class="groups-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem;">
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo A:</strong> MX · ZA · KR · CZ</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo B:</strong> CA · CH · QA · BA</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo C:</strong> BR · MA · HT · SCO</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo D:</strong> US · PY · AU · TR</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo E:</strong> DE · CW · CI · EC</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo F:</strong> NL · JP · TN · SE</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo G:</strong> BE · EG · IR · NZ</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo H:</strong> ES · CV · SA · UY</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo I:</strong> FR · SN · NO · IQ</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo J:</strong> AR · DZ · AT · JO</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo K:</strong> PT · UZ · CO · CD</div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:0.4rem; border-radius:4px; font-size:0.7rem;"><strong>Grupo L:</strong> ENG · HR · GH · PA</div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4 mb-2" style="font-size:0.75rem; color:var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                            FutbolBeo © 2026 - El Pase VIP Definitivo
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="padding: 1.25rem 1.5rem; border-top: 1px solid var(--border-color); display:flex; flex-direction:column; gap:0.75rem;">
+                        <label class="terms-accept-label" style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; font-size: 0.85rem; line-height: 1.4;">
+                            <input type="checkbox" id="accept-vip-terms-checkbox" onchange="toggleVipTermsAccept()" style="accent-color: var(--accent-gold); width: 1.15rem; height: 1.15rem; margin-top:0.1rem; flex-shrink: 0;">
+                            <span style="color: var(--text-secondary);">Acepto los términos y condiciones del Contrato del Pase VIP.</span>
+                        </label>
+                        <div style="display:flex; gap:0.5rem; width: 100%;">
+                            <button class="btn btn-secondary" style="flex:1;" onclick="closeVipTermsModal()">Cancelar</button>
+                            <button id="vip-terms-proceed-btn" class="btn btn-gold" style="flex:2;" disabled onclick="proceedToCheckoutPayment()">
+                                Proceder al Pago <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- MODAL: CHECKOUT BINANCE PAY (SIMULADO) -->
             <div id="checkout-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeCheckoutModal()">
                 <div class="modal-card card checkout-card" style="max-width:450px;">
