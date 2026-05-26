@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Términos y Condiciones – FutbolNeo</title>
+  <meta name="description" content="Términos y Condiciones de uso de la plataforma FutbolNeo – Quiniela Mundial 2026." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #0d0e15;
+      --bg-card: #13151f;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #4b5563;
+      --accent-gold: #ecd06f;
+      --accent-gold-dark: #c9a832;
+      --border-color: rgba(47,53,78,0.9);
+      --border-accent: rgba(236,208,111,0.3);
+      --radius-md: 14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--bg-primary); scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    /* Header */
+    .doc-header {
+      background: linear-gradient(135deg, #08090e 0%, #0d0e15 60%, #13151f 100%);
+      border-bottom: 1px solid var(--border-accent);
+      padding: 2.5rem 1.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(236,208,111,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+      letter-spacing: 1px;
+      transition: opacity 0.2s;
+    }
+    .brand-link:hover { opacity: 0.8; }
+    .brand-link svg { width: 28px; height: 28px; }
+    .doc-header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #ecd06f 0%, #c9a832 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+    .doc-header .subtitle {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+    /* Container */
+    .doc-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+    /* Last updated */
+    .last-updated {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(236,208,111,0.08);
+      border: 1px solid var(--border-accent);
+      border-radius: 999px;
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+      color: var(--accent-gold);
+      margin-bottom: 2.5rem;
+    }
+    /* Intro box */
+    .intro-box {
+      background: rgba(236,208,111,0.06);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    /* Section */
+    .doc-section {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 2.5rem;
+    }
+    .doc-section:last-of-type { border-bottom: none; }
+    .section-number {
+      display: inline-block;
+      background: linear-gradient(135deg, #ecd06f 0%, #c9a832 100%);
+      color: #0d0e15;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.6rem;
+      letter-spacing: 1px;
+    }
+    .doc-section h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+    .doc-section p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+    }
+    .doc-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0.75rem 0;
+    }
+    .doc-section ul li {
+      padding: 0.4rem 0 0.4rem 1.5rem;
+      position: relative;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    .doc-section ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--accent-gold);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    /* Highlight box */
+    .highlight-box {
+      background: rgba(42,159,214,0.07);
+      border-left: 3px solid rgba(42,159,214,0.5);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    /* Contact section */
+    .contact-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .contact-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ecd06f 0%, #c9a832 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.1rem;
+      color: #0d0e15;
+    }
+    /* Footer */
+    .doc-footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    .doc-footer a { color: var(--accent-gold); text-decoration: none; }
+    .doc-footer a:hover { text-decoration: underline; }
+    /* Back button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(236,208,111,0.1);
+      border: 1px solid var(--border-accent);
+      color: var(--accent-gold);
+      border-radius: 999px;
+      padding: 0.55rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      margin-bottom: 2rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .back-btn:hover {
+      background: rgba(236,208,111,0.18);
+      transform: translateX(-3px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <a href="./index.html" class="brand-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8l-4 4 4 4M8 12h8"/>
+      </svg>
+      FutbolNeo
+    </a>
+    <h1>Términos y Condiciones</h1>
+    <p class="subtitle">MUNDIAL FIFA 2026 – QUINIELA FAMILIAR INTELIGENTE</p>
+  </header>
+
+  <!-- MAIN -->
+  <main class="doc-container">
+
+    <a href="./index.html" class="back-btn">← Volver a la Quiniela</a>
+
+    <div class="last-updated">
+      📅 Última actualización: 25 de mayo de 2026
+    </div>
+
+    <div class="intro-box">
+      Al acceder o utilizar la plataforma <strong>FutbolNeo</strong> (en adelante, "la Plataforma"), el usuario acepta de manera expresa los presentes Términos y Condiciones de Uso. Si no está de acuerdo con alguno de los términos aquí expuestos, le rogamos se abstenga de utilizar la Plataforma.
+    </div>
+
+    <!-- 1. Objeto del Servicio -->
+    <div class="doc-section">
+      <span class="section-number">01</span>
+      <h2>Objeto del Servicio</h2>
+      <p>FutbolNeo es una plataforma de entretenimiento digital destinada a la organización de quinielas y concursos de pronósticos deportivos en el marco del <strong>Mundial de Fútbol FIFA 2026</strong>. La Plataforma no constituye un servicio de apuestas con dinero real ni está regulada bajo legislación de juegos de azar.</p>
+      <p>Los servicios ofrecidos incluyen:</p>
+      <ul>
+        <li>Registro y gestión de pronósticos de partidos del Mundial 2026.</li>
+        <li>Tabla de posiciones y ranking entre participantes de un mismo grupo.</li>
+        <li>Generación y descarga de PDF con pronósticos del usuario.</li>
+        <li>Funcionalidades exclusivas para usuarios con Pase VIP (analytics, muro de debate, álbum de figuras).</li>
+        <li>Sistema de álbum de figuritas digitales de jugadores ciborg.</li>
+      </ul>
+    </div>
+
+    <!-- 2. Registro de Usuario -->
+    <div class="doc-section">
+      <span class="section-number">02</span>
+      <h2>Registro y Cuentas de Usuario</h2>
+      <p>Para acceder a ciertas funcionalidades de la Plataforma, el usuario deberá registrarse proporcionando:</p>
+      <ul>
+        <li>Un nombre o alias de participante.</li>
+        <li>Una dirección de correo electrónico válida y en uso.</li>
+      </ul>
+      <p>Al completar el registro, la Plataforma generará automáticamente una <strong>Clave de Acceso</strong> de 4 caracteres. El usuario es el único responsable de la confidencialidad de dicha clave.</p>
+      <div class="highlight-box">
+        ⚠️ La Plataforma no almacena contraseñas. La Clave de Acceso generada es el único mecanismo de autenticación. Guárdela en un lugar seguro.
+      </div>
+      <p>El usuario garantiza que la información proporcionada es veraz, actual y completa, y se compromete a notificar cualquier cambio que afecte a dichos datos.</p>
+    </div>
+
+    <!-- 3. Pase VIP -->
+    <div class="doc-section">
+      <span class="section-number">03</span>
+      <h2>Pase VIP y Niveles de Acceso</h2>
+      <p>La Plataforma opera bajo dos niveles de acceso:</p>
+      <ul>
+        <li><strong>Cuenta Gratuita (F2P):</strong> Permite registrar pronósticos de la fase de grupos y eliminatorias, y exportar el PDF de pronósticos del usuario.</li>
+        <li><strong>Pase VIP:</strong> Desbloquea funciones adicionales como analítica avanzada, muro de debate, álbum de figuritas interactivo y acceso al podio general del torneo.</li>
+      </ul>
+      <p>El Pase VIP puede adquirirse a través de los medios de pago habilitados en la Plataforma. Los pagos realizados no son reembolsables salvo disposición legal en contrario. La activación del Pase VIP está sujeta a verificación manual por el administrador.</p>
+    </div>
+
+    <!-- 4. Uso Aceptable -->
+    <div class="doc-section">
+      <span class="section-number">04</span>
+      <h2>Uso Aceptable de la Plataforma</h2>
+      <p>El usuario se compromete a utilizar la Plataforma de manera lícita y a no realizar ninguna de las siguientes acciones:</p>
+      <ul>
+        <li>Suplantar la identidad de otro usuario o de un administrador.</li>
+        <li>Introducir datos falsos, ofensivos, discriminatorios o contrarios a la moral pública en el muro de debate o cualquier campo de texto.</li>
+        <li>Intentar acceder sin autorización a cuentas de otros usuarios o a los sistemas de la Plataforma.</li>
+        <li>Utilizar robots, scripts u otros métodos automatizados para interactuar con la Plataforma.</li>
+        <li>Reproducir, distribuir o comercializar contenidos de la Plataforma sin autorización expresa del administrador.</li>
+      </ul>
+      <p>El incumplimiento de estas normas podrá dar lugar a la suspensión o eliminación de la cuenta del usuario, sin previo aviso y sin derecho a reembolso.</p>
+    </div>
+
+    <!-- 5. Propiedad Intelectual -->
+    <div class="doc-section">
+      <span class="section-number">05</span>
+      <h2>Propiedad Intelectual</h2>
+      <p>Todos los contenidos de la Plataforma, incluyendo pero no limitado a: diseño gráfico, código fuente, imágenes de figuras digitales, textos, logotipos y animaciones, son propiedad exclusiva de los administradores de FutbolNeo o de sus respectivos licenciantes.</p>
+      <p>Queda expresamente prohibida cualquier reproducción total o parcial, modificación, distribución o uso comercial de dichos contenidos sin autorización escrita previa.</p>
+      <p>Las marcas, nombres y logotipos de los clubes y selecciones nacionales de fútbol mencionados en la Plataforma pertenecen a sus respectivos titulares y se utilizan únicamente con fines de entretenimiento e identificación.</p>
+    </div>
+
+    <!-- 6. Limitación de Responsabilidad -->
+    <div class="doc-section">
+      <span class="section-number">06</span>
+      <h2>Limitación de Responsabilidad</h2>
+      <p>La Plataforma se ofrece <em>"tal cual"</em> y <em>"según disponibilidad"</em>. FutbolNeo no garantiza la disponibilidad, continuidad ni infalibilidad del servicio.</p>
+      <p>FutbolNeo no será responsable por:</p>
+      <ul>
+        <li>Pérdidas de datos derivadas de fallos técnicos o de conectividad.</li>
+        <li>Errores en el cálculo de puntuaciones o tablas de posiciones.</li>
+        <li>Daños directos o indirectos derivados del uso o imposibilidad de uso de la Plataforma.</li>
+        <li>Cambios en el calendario del Mundial FIFA 2026 que afecten a los pronósticos registrados.</li>
+      </ul>
+      <div class="highlight-box">
+        ℹ️ Esta plataforma es un proyecto de entretenimiento familiar. No tiene fines de lucro propios más allá de los costos operativos del servicio.
+      </div>
+    </div>
+
+    <!-- 7. Privacidad y Cookies -->
+    <div class="doc-section">
+      <span class="section-number">07</span>
+      <h2>Privacidad y Tratamiento de Datos</h2>
+      <p>FutbolNeo recopila únicamente los datos mínimos necesarios para prestar el servicio: alias, correo electrónico y clave de acceso generada. Estos datos se almacenan de forma segura y no son vendidos ni cedidos a terceros.</p>
+      <p>La Plataforma utiliza <strong>localStorage</strong> y <strong>sessionStorage</strong> del navegador para mantener la sesión activa y guardar preferencias locales. Para más información, consulta nuestra <a href="./cookies.html" style="color:var(--accent-gold);">Política de Cookies</a>.</p>
+    </div>
+
+    <!-- 8. Modificaciones -->
+    <div class="doc-section">
+      <span class="section-number">08</span>
+      <h2>Modificaciones de los Términos</h2>
+      <p>FutbolNeo se reserva el derecho de modificar los presentes Términos y Condiciones en cualquier momento. Los cambios serán efectivos desde el momento de su publicación en esta página. El uso continuado de la Plataforma tras la publicación de cambios implica la aceptación de los nuevos términos.</p>
+      <p>Se recomienda revisar esta página periódicamente para estar al tanto de cualquier actualización.</p>
+    </div>
+
+    <!-- 9. Ley Aplicable -->
+    <div class="doc-section">
+      <span class="section-number">09</span>
+      <h2>Ley Aplicable y Jurisdicción</h2>
+      <p>Los presentes Términos y Condiciones se rigen por las leyes aplicables en el territorio donde opera el administrador de la Plataforma. Cualquier controversia derivada del uso de la Plataforma se resolverá preferentemente de forma amigable. En caso de no alcanzar acuerdo, ambas partes se someten a la jurisdicción de los tribunales competentes del domicilio del administrador.</p>
+    </div>
+
+    <!-- 10. Contacto -->
+    <div class="doc-section">
+      <span class="section-number">10</span>
+      <h2>Contacto</h2>
+      <p>Si tienes alguna pregunta, reclamación o sugerencia sobre estos Términos y Condiciones, puedes contactarnos a través del administrador de tu grupo o mediante el muro de debate de la Plataforma.</p>
+      <div class="contact-card">
+        <div class="contact-icon">✉️</div>
+        <div>
+          <strong style="color:var(--text-primary);">Administrador de FutbolNeo</strong>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">Disponible a través del panel de administración o del muro de debate de la plataforma.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="doc-footer">
+    <p>© 2026 FutbolNeo – Quiniela Mundial 2026. Todos los derechos reservados.</p>
+    <p style="margin-top:0.4rem;">
+      <a href="./index.html">Volver a la Quiniela</a> &nbsp;·&nbsp;
+      <a href="./cookies.html">Política de Cookies</a>
+    </p>
+  </footer>
+
+</body>
+</html>

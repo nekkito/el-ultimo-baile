@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Política de Cookies – FutbolNeo</title>
+  <meta name="description" content="Política de Cookies de la plataforma FutbolNeo – Quiniela Mundial 2026." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #0d0e15;
+      --bg-card: #13151f;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #4b5563;
+      --accent-gold: #ecd06f;
+      --accent-gold-dark: #c9a832;
+      --accent-teal: #2a9fd6;
+      --border-color: rgba(47,53,78,0.9);
+      --border-accent: rgba(236,208,111,0.3);
+      --radius-md: 14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--bg-primary); scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .doc-header {
+      background: linear-gradient(135deg, #08090e 0%, #0d0e15 60%, #13151f 100%);
+      border-bottom: 1px solid var(--border-accent);
+      padding: 2.5rem 1.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(42,159,214,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+      letter-spacing: 1px;
+      transition: opacity 0.2s;
+    }
+    .brand-link:hover { opacity: 0.8; }
+    .doc-header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #2a9fd6 0%, #1a6fa0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+    .doc-header .subtitle { color: var(--text-secondary); font-size: 0.9rem; letter-spacing: 1px; }
+    .doc-container { max-width: 860px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+    .last-updated {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(42,159,214,0.08);
+      border: 1px solid rgba(42,159,214,0.3);
+      border-radius: 999px;
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+      color: var(--accent-teal);
+      margin-bottom: 2.5rem;
+    }
+    .intro-box {
+      background: rgba(42,159,214,0.06);
+      border: 1px solid rgba(42,159,214,0.25);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    .doc-section { margin-bottom: 2.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 2.5rem; }
+    .doc-section:last-of-type { border-bottom: none; }
+    .section-number {
+      display: inline-block;
+      background: linear-gradient(135deg, #2a9fd6 0%, #1a6fa0 100%);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.6rem;
+      letter-spacing: 1px;
+    }
+    .doc-section h2 { font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem; }
+    .doc-section p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.75rem; }
+    .doc-section ul { list-style: none; padding: 0; margin: 0.75rem 0; }
+    .doc-section ul li { padding: 0.4rem 0 0.4rem 1.5rem; position: relative; color: var(--text-secondary); font-size: 0.95rem; }
+    .doc-section ul li::before { content: '›'; position: absolute; left: 0; color: var(--accent-teal); font-weight: 700; font-size: 1.1rem; }
+    /* Cookie Type Cards */
+    .cookie-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.25rem 0; }
+    @media (max-width: 600px) { .cookie-grid { grid-template-columns: 1fr; } }
+    .cookie-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      transition: border-color 0.2s;
+    }
+    .cookie-card:hover { border-color: rgba(42,159,214,0.4); }
+    .cookie-card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .cookie-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; }
+    .cookie-card p { font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
+    .cookie-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.5px;
+    }
+    .badge-required { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .badge-functional { background: rgba(42,159,214,0.15); color: #55bde8; border: 1px solid rgba(42,159,214,0.3); }
+    .badge-none { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+    /* Table */
+    .cookie-table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.88rem; }
+    .cookie-table th {
+      background: rgba(42,159,214,0.1);
+      color: var(--accent-teal);
+      font-weight: 700;
+      text-align: left;
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid rgba(42,159,214,0.2);
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .cookie-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); vertical-align: top; }
+    .cookie-table tr:last-child td { border-bottom: none; }
+    .cookie-table code {
+      background: rgba(255,255,255,0.06);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+      color: var(--accent-teal);
+    }
+    /* Highlight */
+    .highlight-box { background: rgba(236,208,111,0.06); border-left: 3px solid rgba(236,208,111,0.4); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1rem 1.25rem; margin: 1rem 0; color: var(--text-secondary); font-size: 0.9rem; }
+    /* Footer */
+    .doc-footer { text-align: center; padding: 2rem 1.5rem; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; }
+    .doc-footer a { color: var(--accent-gold); text-decoration: none; }
+    .doc-footer a:hover { text-decoration: underline; }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(42,159,214,0.1);
+      border: 1px solid rgba(42,159,214,0.3);
+      color: var(--accent-teal);
+      border-radius: 999px;
+      padding: 0.55rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      margin-bottom: 2rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .back-btn:hover { background: rgba(42,159,214,0.18); transform: translateX(-3px); }
+  </style>
+</head>
+<body>
+
+  <header class="doc-header">
+    <a href="./index.html" class="brand-link">🌐 FutbolNeo</a>
+    <h1>🍪 Política de Cookies</h1>
+    <p class="subtitle">MUNDIAL FIFA 2026 – QUINIELA FAMILIAR INTELIGENTE</p>
+  </header>
+
+  <main class="doc-container">
+
+    <a href="./index.html" class="back-btn">← Volver a la Quiniela</a>
+
+    <div class="last-updated">📅 Última actualización: 25 de mayo de 2026</div>
+
+    <div class="intro-box">
+      Esta Política de Cookies explica qué tipo de almacenamiento local utiliza <strong>FutbolNeo</strong> en tu dispositivo, con qué finalidad, y cómo puedes controlarlo. No utilizamos cookies de rastreo publicitario ni de terceros.
+    </div>
+
+    <!-- 1. ¿Qué son las cookies? -->
+    <div class="doc-section">
+      <span class="section-number">01</span>
+      <h2>¿Qué son las cookies y el almacenamiento local?</h2>
+      <p>Las cookies son pequeños archivos de texto que los sitios web guardan en tu navegador. En FutbolNeo utilizamos principalmente <strong>localStorage</strong> y <strong>sessionStorage</strong>, que son mecanismos similares integrados en el navegador, sin enviar datos a servidores externos.</p>
+      <p>Estos mecanismos nos permiten recordar tu sesión, tus pronósticos guardados localmente y tus preferencias de idioma y tema visual, sin necesidad de que inicies sesión cada vez.</p>
+    </div>
+
+    <!-- 2. Tipos de cookies -->
+    <div class="doc-section">
+      <span class="section-number">02</span>
+      <h2>Tipos de almacenamiento que utilizamos</h2>
+      <div class="cookie-grid">
+        <div class="cookie-card">
+          <span class="cookie-badge badge-required">ESENCIAL</span>
+          <div class="cookie-card-icon">🔐</div>
+          <h3>Sesión de Usuario</h3>
+          <p>Guarda tu sesión activa para que no tengas que ingresar tu clave cada vez. Se elimina al cerrar el navegador.</p>
+        </div>
+        <div class="cookie-card">
+          <span class="cookie-badge badge-functional">FUNCIONAL</span>
+          <div class="cookie-card-icon">🎯</div>
+          <h3>Pronósticos Locales</h3>
+          <p>Almacena tus predicciones de partidos localmente en el dispositivo, como respaldo ante fallos de red.</p>
+        </div>
+        <div class="cookie-card">
+          <span class="cookie-badge badge-functional">FUNCIONAL</span>
+          <div class="cookie-card-icon">🎨</div>
+          <h3>Preferencias de UI</h3>
+          <p>Recuerda tu idioma preferido (ES/EN) y el tema visual (oscuro/claro) seleccionado.</p>
+        </div>
+        <div class="cookie-card">
+          <span class="cookie-badge badge-none">NO USAMOS</span>
+          <div class="cookie-card-icon">🚫</div>
+          <h3>Publicidad / Rastreo</h3>
+          <p>No utilizamos cookies de publicidad, analytics de terceros, ni pixels de seguimiento.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Detalle técnico -->
+    <div class="doc-section">
+      <span class="section-number">03</span>
+      <h2>Detalle técnico de los datos almacenados</h2>
+      <table class="cookie-table">
+        <thead>
+          <tr>
+            <th>Clave</th>
+            <th>Tipo</th>
+            <th>Propósito</th>
+            <th>Duración</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>quinielaUser</code></td>
+            <td>sessionStorage</td>
+            <td>Datos de sesión del usuario (nombre, alias, email, rango)</td>
+            <td>Hasta cerrar pestaña</td>
+          </tr>
+          <tr>
+            <td><code>quinielaPreds_{email}</code></td>
+            <td>localStorage</td>
+            <td>Copia local de los pronósticos del usuario</td>
+            <td>Permanente (hasta borrado manual)</td>
+          </tr>
+          <tr>
+            <td><code>quinielaLang</code></td>
+            <td>localStorage</td>
+            <td>Idioma preferido del usuario (es / en)</td>
+            <td>Permanente</td>
+          </tr>
+          <tr>
+            <td><code>quinielaTheme</code></td>
+            <td>localStorage</td>
+            <td>Preferencia de tema visual (dark / light)</td>
+            <td>Permanente</td>
+          </tr>
+          <tr>
+            <td><code>futbolneo_cookies_accepted</code></td>
+            <td>localStorage</td>
+            <td>Registro de aceptación de esta política de cookies</td>
+            <td>365 días</td>
+          </tr>
+          <tr>
+            <td><code>quinielaAvatar_{email}</code></td>
+            <td>localStorage</td>
+            <td>Avatar personalizado del usuario (imagen base64)</td>
+            <td>Permanente</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="highlight-box">
+        ✅ Todos los datos se guardan <strong>exclusivamente en tu dispositivo</strong>. FutbolNeo no vende ni comparte estos datos con terceros.
+      </div>
+    </div>
+
+    <!-- 4. Cómo controlar -->
+    <div class="doc-section">
+      <span class="section-number">04</span>
+      <h2>Cómo controlar o eliminar los datos almacenados</h2>
+      <p>Puedes gestionar o eliminar el almacenamiento local de tu navegador en cualquier momento:</p>
+      <ul>
+        <li><strong>Chrome / Edge:</strong> Configuración → Privacidad y seguridad → Borrar datos de navegación → Cookies y otros datos de sitios.</li>
+        <li><strong>Firefox:</strong> Preferencias → Privacidad y seguridad → Cookies y datos del sitio → Borrar datos.</li>
+        <li><strong>Safari:</strong> Preferencias → Privacidad → Gestionar datos del sitio web → Eliminar.</li>
+      </ul>
+      <p>Ten en cuenta que eliminar estos datos cerrará tu sesión activa y perderás los pronósticos guardados localmente (aunque los guardados en la nube permanecerán intactos).</p>
+    </div>
+
+    <!-- 5. Base legal -->
+    <div class="doc-section">
+      <span class="section-number">05</span>
+      <h2>Base Legal y Consentimiento</h2>
+      <p>El uso de almacenamiento local estrictamente necesario (sesión de usuario, pronósticos) se basa en el <strong>interés legítimo</strong> de prestar el servicio solicitado por el usuario. El resto de preferencias (idioma, tema) solo se almacenan tras la interacción activa del usuario con los controles correspondientes.</p>
+      <p>Al hacer clic en <strong>"Aceptar"</strong> en el banner de cookies que aparece en tu primera visita, confirmas haber leído y aceptado esta política.</p>
+    </div>
+
+    <!-- 6. Actualizaciones -->
+    <div class="doc-section">
+      <span class="section-number">06</span>
+      <h2>Actualizaciones de esta Política</h2>
+      <p>FutbolNeo puede actualizar esta Política de Cookies en cualquier momento para reflejar cambios en el funcionamiento de la Plataforma. La fecha de "última actualización" en la parte superior de esta página indica cuándo fue revisada por última vez.</p>
+      <p>Si los cambios son significativos, se mostrará de nuevo el banner de consentimiento para informarte.</p>
+    </div>
+
+    <!-- 7. Contacto -->
+    <div class="doc-section">
+      <span class="section-number">07</span>
+      <h2>Contacto</h2>
+      <p>Para cualquier consulta sobre el uso de datos o cookies, puedes contactar al administrador de la Plataforma a través del muro de debate o del panel de administración.</p>
+    </div>
+
+  </main>
+
+  <footer class="doc-footer">
+    <p>© 2026 FutbolNeo – Quiniela Mundial 2026. Todos los derechos reservados.</p>
+    <p style="margin-top:0.4rem;">
+      <a href="./index.html">Volver a la Quiniela</a> &nbsp;·&nbsp;
+      <a href="./terms.html">Términos y Condiciones</a>
+    </p>
+  </footer>
+
+</body>
+</html>

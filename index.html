@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Último Baile - Quiniela Mundial 2026</title>
+    <title>MySportPrediction - Quiniela Mundial 2026</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +13,11 @@
     <!-- Main Style Sheet -->
     <link rel="stylesheet" href="styles.css">
 
+    <!-- Three.js for 3D WebGL visuals -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP for advanced animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
     <!-- Background Audio (loop infinito) -->
     <audio id="bg-audio" loop preload="auto">
       <source src="./Recursos/Sonido fondo.mp3" type="audio/mpeg">
@@ -20,6 +25,9 @@
     </audio>
 </head>
 <body class="dark-theme">
+
+    <!-- WebGL Canvas for interactive background particles -->
+    <canvas id="three-canvas"></canvas>
 
     <!-- VIDEO BG: Scroll-controlled AnimacionCopa -->
     <video id="matches-video-bg" muted playsinline preload="auto">
@@ -32,13 +40,17 @@
         <button id="lang-toggle-btn" class="control-btn" title="Switch Language" onclick="toggleLanguage()">
             <i class="fa-solid fa-earth-americas"></i> <span id="lang-btn-text">EN</span>
         </button>
+        <!-- Login/User icon button: visible when NOT logged in -->
+        <button id="header-login-btn" class="control-btn" title="Iniciar Sesión / Registrarse" onclick="openAuthModal('register')" style="display:none;">
+            <i class="fa-solid fa-circle-user" style="font-size:1.1rem;"></i>
+        </button>
         <button id="logout-btn" class="control-btn hidden" title="Cerrar Sesión" onclick="logout()">
             <i class="fa-solid fa-right-from-bracket"></i>
         </button>
     </div>
 
     <!-- LANDING SCREEN: ROLE SELECTION -->
-    <div id="landing-screen" class="login-overlay">
+    <div id="landing-screen" class="login-overlay hidden">
         <div class="login-card card text-center select-role-card">
             <div class="login-header">
                 <div class="legends-avatars">
@@ -46,8 +58,8 @@
                     <div class="legend-avatar cr7" title="Cristiano Ronaldo"></div>
                     <div class="legend-avatar neymar" title="Neymar Jr"></div>
                 </div>
-                <h1 class="logo-title outfit" data-i18n="login-title">El Último Baile</h1>
-                <p class="logo-subtitle" data-i18n="login-subtitle">Mundial 2026 • Quiniela IA de Leyendas</p>
+                <h1 class="logo-title outfit">MySportPrediction</h1>
+                <p class="logo-subtitle" data-i18n="hero-tagline">Nueva generación y análisis con agentes de IA en tiempo real</p>
             </div>
             
             <p class="role-instructions mb-4 text-glow">Selecciona tu rol para continuar</p>
@@ -172,6 +184,28 @@
                     </div>
                 </div>
 
+                <div class="input-group">
+                    <label>Nivel de Quiniela</label>
+                    <div class="billing-selector-grid">
+                        <div class="billing-option-card active" id="billing-free" onclick="selectBillingLevel('Gratuita')">
+                            <div class="billing-icon"><i class="fa-solid fa-gift"></i></div>
+                            <strong>Gratuita</strong>
+                            <span>Hasta 15 jugadores</span>
+                        </div>
+                        <div class="billing-option-card" id="billing-premium" onclick="selectBillingLevel('Premium')">
+                            <div class="billing-icon"><i class="fa-solid fa-gem"></i></div>
+                            <strong>Premium</strong>
+                            <span>Sin límites + VIP</span>
+                        </div>
+                        <div class="billing-option-card" id="billing-private" onclick="selectBillingLevel('Privada')">
+                            <div class="billing-icon"><i class="fa-solid fa-shield-halved text-gold"></i></div>
+                            <strong>Privada (VIP)</strong>
+                            <span>Base de datos privada</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="org-level" name="org-level" value="Gratuita">
+                </div>
+
                 <button type="submit" id="org-create-submit" class="btn btn-primary btn-block">
                     <span>Crear Quiniela</span> <i class="fa-solid fa-plus"></i>
                 </button>
@@ -245,21 +279,37 @@
             <div class="hero-overlay"></div>
             <div class="hero-container container">
                 <!-- LEFT COLUMN: Title only -->
-                <div class="hero-left">
+                <div class="hero-left" style="display:flex; align-items:center; gap:1.5rem;">
+                    <div id="ball-3d-container"></div>
                     <div class="hero-titles">
-                        <h1 class="outfit hero-main-title" data-i18n="hero-title">El Último Baile</h1>
-                        <p class="hero-subtitle text-glow" data-i18n="hero-tagline">Quiniela IA • Copa Mundial de la FIFA 2026™</p>
+                        <h1 class="outfit hero-main-title">MySportPrediction</h1>
+                        <p class="hero-subtitle text-glow" data-i18n="hero-tagline">Nueva generación y análisis con agentes de IA en tiempo real</p>
                     </div>
                 </div>
                 <!-- RIGHT COLUMN: User welcome card -->
                 <div class="hero-right">
-                    <div class="user-welcome-banner card">
-                        <div class="user-avatar" id="header-avatar">M</div>
-                        <div class="user-meta">
-                            <span class="user-greeting" data-i18n="greeting">¡Hola, jugador!</span>
-                            <h3 id="header-user-name">Usuario de Prueba</h3>
-                        </div>
-                    </div>
+        <div class="user-welcome-banner card">
+      <div class="user-avatar" id="header-avatar" onclick="triggerAvatarUpload()" style="cursor: pointer; position: relative; overflow: hidden;" title="Cambiar avatar (Máx 184x184)">M</div>
+      <input type="file" id="avatar-file-input" style="display: none;" accept="image/*" onchange="handleAvatarUpload(event)">
+      <div class="user-meta">
+        <div class="flex-align" style="gap:0.5rem;">
+          <span class="user-greeting" data-i18n="greeting">¡Hola, jugador!</span>
+          <span id="user-tier-badge" class="badge-tier F2P">F2P</span>
+        </div>
+        <h3 id="header-user-name">Usuario de Prueba</h3>
+        <div class="user-actions-banner">
+          <button id="upgrade-vip-banner-btn" class="btn btn-xs btn-gold" onclick="openCheckoutModal()">
+            <i class="fa-solid fa-gem"></i> Obtener Pase VIP
+          </button>
+          <button id="create-quiniela-banner-btn" class="btn btn-xs btn-primary" onclick="openCreateQuinielaModal()" style="display: none;">
+            <i class="fa-solid fa-plus-circle"></i> Crear Quiniela
+          </button>
+          <button id="toggle-quiniela-context-btn" class="btn btn-xs btn-secondary" style="display: none;">
+            <i class="fa-solid fa-shuffle"></i> Ver Quiniela Oficial
+          </button>
+        </div>
+      </div>
+    </div>
                 </div>
             </div>
         </header>
@@ -272,13 +322,22 @@
             <button id="tab-leaderboard" class="tab-btn" onclick="switchTab('leaderboard')">
                 <i class="fa-solid fa-ranking-star"></i> <span data-i18n="tab-label-leaderboard">Tabla General</span>
             </button>
-            <button id="tab-tribute" class="tab-btn" onclick="switchTab('tribute')">
+            <button id="tab-chat" class="tab-btn tab-vip-locked" onclick="switchTab('chat')">
+                <i class="fa-solid fa-comments"></i> <span>Muro de Debate</span>
+                <span class="tab-vip-badge">VIP</span>
+            </button>
+            <button id="tab-analytics" class="tab-btn tab-vip-locked" onclick="switchTab('analytics')">
+                <i class="fa-solid fa-chart-line"></i> <span>Analítica VIP</span>
+                <span class="tab-vip-badge">VIP</span>
+            </button>
+            <button id="tab-tribute" class="tab-btn tab-vip-locked" onclick="switchTab('tribute')">
                 <i class="fa-solid fa-trophy"></i> <span data-i18n="tab-label-tribute">El Último Baile</span>
+                <span class="tab-vip-badge">VIP</span>
             </button>
-            <!-- ADMIN TAB: hidden by default, revealed only for admin email -->
-            <button id="tab-admin" class="tab-btn tab-admin-btn" onclick="switchTab('admin')" style="display:none">
-                <i class="fa-solid fa-gear"></i> <span>⚙️ Panel Admin</span>
+            <button id="tab-rules" class="tab-btn" onclick="switchTab('rules')">
+                <i class="fa-solid fa-book-open"></i> <span data-i18n="tab-label-rules">Reglas</span>
             </button>
+
         </nav>
 
         <!-- PRE-DEADLINE WARNING BANNER (shown 2h before close) -->
@@ -295,48 +354,68 @@
             <!-- SECTION: PRONÓSTICOS -->
             <section id="sec-predictions" class="content-section active">
                 
-                <!-- DEADLINE & SAVE STATUS BAR -->
-                <div id="deadline-bar" class="alert alert-info flex-between flex-wrap">
-                    <div class="flex-align">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        <span>
-                            <strong data-i18n="deadline-label">Límite de Envío:</strong> 
-                            <span id="deadline-date-text">11 de Junio, 2026 @ 15:00 EST</span>
-                        </span>
+                <!-- PRINT-ONLY BRANDING HEADER -->
+                <div class="print-only-header">
+                    <div class="print-header-content">
+                        <img src="./Recursos/logo.jpg" alt="MySportPrediction Logo" class="print-brand-logo">
+                        <div class="print-brand-titles">
+                            <h1 class="outfit">MySportPrediction</h1>
+                            <p class="print-brand-tagline" data-i18n="hero-tagline">Nueva generación y análisis con agentes de IA en tiempo real</p>
+                        </div>
                     </div>
-                    <div id="countdown-wrapper" class="flex-align">
-                        <span id="countdown-timer" class="badge badge-gold">--:--:--:--</span>
-                    </div>
-                </div>
-
-                <!-- SAVE PREDICTIONS FLOATING FLOAT BAR -->
-                <div class="save-predictions-panel card">
-                    <div class="panel-info">
-                        <p class="panel-title" data-i18n="save-panel-title">Guarda tus pronósticos en caliente</p>
-                        <p class="panel-subtitle" data-i18n="save-panel-subtitle">Puedes modificar tus marcadores antes del inicio del torneo.</p>
-                    </div>
-                    <div class="panel-actions">
-                        <button id="save-predictions-btn" class="btn btn-gold btn-lg" onclick="saveAllPredictions()">
-                            <i id="save-btn-icon" class="fa-solid fa-cloud-arrow-up"></i> 
-                            <span id="save-btn-text" data-i18n="btn-save-predictions">Guardar Pronósticos</span>
-                        </button>
+                    <div class="print-user-meta" id="print-user-meta-info">
+                        <!-- User name will be injected by JS -->
                     </div>
                 </div>
-
-                <!-- STAGE & GROUP FILTER BUTTONS -->
-                <div class="filter-wrapper flex-between flex-wrap">
-                    <div class="filter-group">
-                        <button class="filter-tab active" id="f-groups" onclick="switchFixtureStage('groups')">
-                            <span data-i18n="filter-groups">Fase de Grupos</span>
-                        </button>
-                        <button class="filter-tab" id="f-playoffs" onclick="switchFixtureStage('playoffs')">
-                            <span data-i18n="filter-playoffs">Fase de Eliminatorias (Playoffs)</span>
-                        </button>
+                
+                <!-- STICKY PREDICTIONS HEADER -->
+                <div class="sticky-predictions-header">
+                    <!-- DEADLINE & SAVE STATUS BAR -->
+                    <div id="deadline-bar" class="alert alert-info flex-between flex-wrap">
+                        <div class="flex-align">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>
+                                <strong data-i18n="deadline-label">Límite de Envío:</strong> 
+                                <span id="deadline-date-text">11 de Junio, 2026 @ 15:00 EST</span>
+                            </span>
+                        </div>
+                        <div id="countdown-wrapper" class="flex-align">
+                            <span id="countdown-timer" class="badge badge-gold">--:--:--:--</span>
+                        </div>
                     </div>
-                    <div class="group-selectors-wrapper flex-align" style="gap:0.5rem;">
-                        <span class="group-label-prefix">Grupos:</span>
-                        <div class="group-selectors flex-wrap" id="group-letter-selectors">
-                            <!-- Letters A to L injected by JS -->
+
+                    <!-- SAVE PREDICTIONS FLOATING FLOAT BAR -->
+                    <div class="save-predictions-panel card">
+                        <div class="panel-info">
+                            <p class="panel-title" data-i18n="save-panel-title">Guarda tus pronósticos en caliente</p>
+                            <p class="panel-subtitle" data-i18n="save-panel-subtitle">Puedes modificar tus marcadores antes del inicio del torneo.</p>
+                        </div>
+                        <div class="panel-actions" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <button id="export-pdf-btn" class="btn btn-secondary btn-lg" onclick="exportPredictionsToPDF()">
+                                <i class="fa-solid fa-file-pdf"></i> <span data-i18n="btn-export-pdf">Exportar PDF</span>
+                            </button>
+                            <button id="save-predictions-btn" class="btn btn-gold btn-lg" onclick="saveAllPredictions()">
+                                <i id="save-btn-icon" class="fa-solid fa-cloud-arrow-up"></i> 
+                                <span id="save-btn-text" data-i18n="btn-save-predictions">Guardar Pronósticos</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STAGE & GROUP FILTER BUTTONS -->
+                    <div class="filter-wrapper flex-between flex-wrap">
+                        <div class="filter-group">
+                            <button class="filter-tab active" id="f-groups" onclick="switchFixtureStage('groups')">
+                                <span data-i18n="filter-groups">Fase de Grupos</span>
+                            </button>
+                            <button class="filter-tab" id="f-playoffs" onclick="switchFixtureStage('playoffs')">
+                                <span data-i18n="filter-playoffs">Fase de Eliminatorias (Playoffs)</span>
+                            </button>
+                        </div>
+                        <div class="group-selectors-wrapper flex-align" style="gap:0.5rem;">
+                            <span class="group-label-prefix">Grupos:</span>
+                            <div class="group-selectors flex-wrap" id="group-letter-selectors">
+                                <!-- Letters A to L injected by JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -409,6 +488,302 @@
 
                 </div>
 
+                <!-- PRINT-ONLY BRANDING FOOTER -->
+                <div class="print-only-footer">
+                    <p>Documento de predicciones oficial generado en <strong>MySportPrediction</strong> (www.mysportprediction.com). Todos los derechos reservados © 2026.</p>
+                </div>
+            </section>
+
+            <!-- SECTION: RULES (MySportPrediction Official Manual) -->
+            <section id="sec-rules" class="content-section">
+                <div class="rules-page-wrapper">
+
+                    <!-- Hero header -->
+                    <div class="rules-hero">
+                        <div class="rules-hero-badge"><i class="fa-solid fa-book-open"></i></div>
+                        <h2 class="outfit rules-main-title">📖 Manual MySportPrediction</h2>
+                        <p class="rules-hero-subtitle" data-i18n="rules-subtitle">New Generation and Analysis with AI Agents in Real Time — Sistema de Puntuación Oficial</p>
+                    </div>
+
+                    <!-- 1. Submission Deadline -->
+                    <div class="rules-section card">
+                        <div class="rules-section-header">
+                            <span class="rules-section-icon">📅</span>
+                            <h3 class="outfit">1. Ventana de Entrega <span class="rules-label-en">(Submission Deadline)</span></h3>
+                        </div>
+                        <ul class="rules-list">
+                            <li><i class="fa-solid fa-clock text-gold"></i> <strong>Fecha Límite:</strong> Las predicciones deben guardarse antes de la fecha límite indicada en la interfaz principal <span class="badge badge-gold" style="font-size:0.75rem;">11 Jun 2026 @ 15:00 EST</span></li>
+                            <li><i class="fa-solid fa-pen-to-square text-gold"></i> <strong>Modificaciones Live:</strong> Puedes actualizar marcadores y variables cuantas veces sea necesario <em>antes</em> del inicio del torneo o fecha límite.</li>
+                            <li><i class="fa-solid fa-snowflake" style="color:#60a5fa;"></i> <strong>Congelación:</strong> Una vez cerrada la ventana, los agentes de IA congelarán las bases de datos para el cálculo en tiempo real.</li>
+                        </ul>
+                    </div>
+
+                    <!-- 2. Scoring Matrix -->
+                    <div class="rules-section card">
+                        <div class="rules-section-header">
+                            <span class="rules-section-icon">📊</span>
+                            <h3 class="outfit">2. Matriz de Puntuación Profesional <span class="rules-label-en">(Variables Exactas)</span></h3>
+                        </div>
+                        <p class="rules-note">Para premiar la verdadera precisión probabilística y eliminar el factor de "suerte por aproximación", la plataforma evalúa únicamente <strong>valores discretos exactos</strong>. No existen rangos ni umbrales intermedios.</p>
+
+                        <div class="rules-scoring-grid">
+                            <!-- Block A -->
+                            <div class="rules-block">
+                                <div class="rules-block-header" style="background: linear-gradient(135deg,rgba(59,130,246,0.2),rgba(37,99,235,0.1)); border-left: 3px solid #3b82f6;">
+                                    <span class="rules-block-letter">A</span>
+                                    <span>Bloque Principal: Tendencia y Marcador Exacto</span>
+                                </div>
+                                <div class="rules-score-row">
+                                    <div class="rules-score-badge" style="background:rgba(59,130,246,0.15);color:#60a5fa;">+3 pts</div>
+                                    <div>
+                                        <strong>Acierto de Tendencia (1X2)</strong>
+                                        <p>Predecir si gana el local, hay empate o gana el visitante.</p>
+                                    </div>
+                                </div>
+                                <div class="rules-score-row">
+                                    <div class="rules-score-badge" style="background:rgba(236,208,111,0.15);color:#ecd06f;">+6 pts</div>
+                                    <div>
+                                        <strong>Acierto de Marcador Exacto</strong>
+                                        <p>Precisión en el resultado final del partido reglamentario. <em>(Total acumulado: 9 pts)</em></p>
+                                    </div>
+                                </div>
+                                <div class="rules-score-row">
+                                    <div class="rules-score-badge" style="background:rgba(59,130,246,0.15);color:#60a5fa;">+2 pts</div>
+                                    <div>
+                                        <strong>Bonificación Dixon-Coles (Empate con Goles)</strong>
+                                        <p>Si predices un empate con goles (ej. 1-1, 2-2) y aciertas. Alta complejidad matemática. <em>(Total: 11 pts)</em></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Block B -->
+                            <div class="rules-block">
+                                <div class="rules-block-header" style="background: linear-gradient(135deg,rgba(236,208,111,0.2),rgba(201,168,50,0.1)); border-left: 3px solid #ecd06f;">
+                                    <span class="rules-block-letter" style="color:#ecd06f;">B</span>
+                                    <span>Bloque de Goles por Tiempos <span class="rules-label-en">(Micro-métricas)</span></span>
+                                </div>
+                                <div class="rules-score-row">
+                                    <div class="rules-score-badge" style="background:rgba(236,208,111,0.15);color:#ecd06f;">+3 pts</div>
+                                    <div>
+                                        <strong>Cantidad Exacta de Goles en el 1er Tiempo</strong>
+                                        <p>Se debe acertar de forma exacta cuántos goles anotó cada equipo en los primeros 45 minutos.</p>
+                                    </div>
+                                </div>
+                                <div class="rules-score-row">
+                                    <div class="rules-score-badge" style="background:rgba(236,208,111,0.15);color:#ecd06f;">+3 pts</div>
+                                    <div>
+                                        <strong>Cantidad Exacta de Goles en el 2º Tiempo</strong>
+                                        <p>Se debe acertar la cantidad exacta de goles anotados exclusivamente en la segunda mitad por cada bando.</p>
+                                    </div>
+                                </div>
+                                <div class="rules-score-row">
+                                    <div class="rules-score-badge" style="background:rgba(59,130,246,0.15);color:#60a5fa;">+1 pt</div>
+                                    <div>
+                                        <strong>Mercado BTTS (Ambos Equipos Anotan)</strong>
+                                        <p>Variable binaria (Sí / No) que evalúa el cruce de fuerzas ofensivas y defensivas.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Block C -->
+                            <div class="rules-block">
+                                <div class="rules-block-header" style="background: linear-gradient(135deg,rgba(239,68,68,0.2),rgba(185,28,28,0.1)); border-left: 3px solid #ef4444;">
+                                    <span class="rules-block-letter" style="color:#ef4444;">C</span>
+                                    <span>Bloque Disciplinario Quirúrgico <span class="rules-label-en">(Todo o Nada)</span></span>
+                                </div>
+                                <div class="rules-score-row">
+                                    <div class="rules-score-badge" style="background:rgba(239,68,68,0.15);color:#f87171; font-size:1.1rem;">+8 pts</div>
+                                    <div>
+                                        <strong>Acierto de Tarjetas Exactas (Combo)</strong>
+                                        <p>El analista debe clavar tanto la cantidad exacta de <span style="color:#ecd06f;">tarjetas amarillas</span> totales como de <span style="color:#f87171;">tarjetas rojas</span> totales del encuentro.</p>
+                                        <div class="rules-warning"><i class="fa-solid fa-triangle-exclamation"></i> <strong>Regla Estricta Todo o Nada:</strong> Si falla cualquiera de las dos tarjetas, el bloque completo se evalúa como fallido. No hay puntos parciales.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Summary Table -->
+                    <div class="rules-section card">
+                        <div class="rules-section-header">
+                            <span class="rules-section-icon">📈</span>
+                            <h3 class="outfit">3. Tabla Resumen de Puntuación Base</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="rules-table">
+                                <thead>
+                                    <tr>
+                                        <th>Categoría</th>
+                                        <th>Evento Evaluado</th>
+                                        <th style="text-align:center;">Puntos</th>
+                                        <th>Criterio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span style="color:#60a5fa;">🔵 Tendencia</span></td>
+                                        <td>Ganador del partido o Empate (1X2)</td>
+                                        <td style="text-align:center;"><strong class="text-gold">+3 pts</strong></td>
+                                        <td>Predicción básica de rumbo.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="color:#ecd06f;">🟡 Marcador</span></td>
+                                        <td>Resultado Exacto del Partido (ej. 2 - 1)</td>
+                                        <td style="text-align:center;"><strong class="text-gold">+6 pts</strong></td>
+                                        <td>Precisión del marcador final.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="color:#60a5fa;">🔵 Dixon-Coles</span></td>
+                                        <td>Marcador de Empate con Goles (ej. 2-2)</td>
+                                        <td style="text-align:center;"><strong class="text-gold">+2 pts</strong></td>
+                                        <td>Bonificación por complejidad.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="color:#ecd06f;">🟡 Tiempo I</span></td>
+                                        <td>Goles exactos del 1er Tiempo (Loc/Vis)</td>
+                                        <td style="text-align:center;"><strong class="text-gold">+3 pts</strong></td>
+                                        <td>Micro-métrica de la primera mitad.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="color:#ecd06f;">🟡 Tiempo II</span></td>
+                                        <td>Goles exactos del 2º Tiempo (Loc/Vis)</td>
+                                        <td style="text-align:center;"><strong class="text-gold">+3 pts</strong></td>
+                                        <td>Micro-métrica de la segunda mitad.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="color:#60a5fa;">🔵 Mercado BTTS</span></td>
+                                        <td>Ambos equipos anotan (Sí / No)</td>
+                                        <td style="text-align:center;"><strong class="text-gold">+1 pt</strong></td>
+                                        <td>Variable binaria de tendencia.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="color:#f87171;">🔴 Disciplina</span></td>
+                                        <td>Cantidad Exacta de Amarillas Y Rojas</td>
+                                        <td style="text-align:center;"><strong class="text-gold">+8 pts</strong></td>
+                                        <td>Combo perfecto (Todo o Nada).</td>
+                                    </tr>
+                                    <tr style="background:rgba(236,208,111,0.08);">
+                                        <td colspan="2"><strong>🏆 MÁXIMO POR PARTIDO (Base)</strong></td>
+                                        <td style="text-align:center;"><strong style="color:#ecd06f;font-size:1.1rem;">26 pts</strong></td>
+                                        <td>Tendencia+Marcador+Dixon+T1+T2+BTTS+Cards</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 4. Tiebreaker Rules -->
+                    <div class="rules-section card">
+                        <div class="rules-section-header">
+                            <span class="rules-section-icon">🏆</span>
+                            <h3 class="outfit">4. Reglas del Podio Top 10 y Desempate Técnico</h3>
+                        </div>
+                        <p>MySportPrediction premia la consistencia mediante un formato de <strong>Podio Top 10</strong> con distribución de premios compartida. Si al finalizar el torneo el corte de los primeros 10 lugares arroja un puntaje idéntico, todos los analistas empatados dentro de ese rango comparten el premio.</p>
+                        <p style="margin-top:0.75rem;">Para ordenar el Leaderboard, se aplicará el <strong>Desempate Técnico por Eficiencia Exacta en Cascada:</strong></p>
+                        <div class="rules-cascade">
+                            <div class="cascade-step">
+                                <div class="cascade-num">1°</div>
+                                <div><strong>Primer Filtro:</strong> Mayor cantidad de Marcadores Exactos del Partido acertados a lo largo de la competencia.</div>
+                            </div>
+                            <div class="cascade-step">
+                                <div class="cascade-num">2°</div>
+                                <div><strong>Segundo Filtro:</strong> Mayor cantidad de goles exactos por tiempos acertados (Suma de aciertos en Tiempo I + Tiempo II).</div>
+                            </div>
+                            <div class="cascade-step">
+                                <div class="cascade-num">3°</div>
+                                <div><strong>Tercer Filtro:</strong> Mayor cantidad de Combos de Tarjetas Exactas acertados.</div>
+                            </div>
+                            <div class="cascade-step" style="border-left-color:#ecd06f;">
+                                <div class="cascade-num" style="background:#ecd06f;color:#0d0e15;">∞</div>
+                                <div><strong>Resolución Final:</strong> Si tras los tres filtros aún quedan más de 10 personas con idénticas métricas, el premio se dividirá equitativamente entre los analistas restantes.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Phase Multipliers -->
+                    <div class="rules-section card">
+                        <div class="rules-section-header">
+                            <span class="rules-section-icon">🚀</span>
+                            <h3 class="outfit">5. Multiplicadores de Estabilidad por Fase</h3>
+                        </div>
+                        <p>Para premiar los modelos predictivos que demuestran <strong>resiliencia y estabilidad matemática</strong> a medida que la muestra de datos se reduce y la presión del torneo aumenta, los puntos base se multiplicarán según la fase del campeonato:</p>
+                        <div class="rules-multipliers-grid">
+                            <div class="multiplier-card">
+                                <div class="multiplier-phase">Fase de Grupos / Ronda de 32</div>
+                                <div class="multiplier-value">×1</div>
+                                <div class="multiplier-desc">Puntuación Base</div>
+                            </div>
+                            <div class="multiplier-card" style="border-color:rgba(59,130,246,0.4);">
+                                <div class="multiplier-phase">Octavos y Cuartos de Final</div>
+                                <div class="multiplier-value" style="color:#60a5fa;">×2</div>
+                                <div class="multiplier-desc">Puntos del partido duplicados</div>
+                            </div>
+                            <div class="multiplier-card" style="border-color:rgba(168,85,247,0.4);">
+                                <div class="multiplier-phase">Semifinales</div>
+                                <div class="multiplier-value" style="color:#c084fc;">×3</div>
+                                <div class="multiplier-desc">Puntos del partido triplicados</div>
+                            </div>
+                            <div class="multiplier-card" style="border-color:rgba(236,208,111,0.6); background: rgba(236,208,111,0.05);">
+                                <div class="multiplier-phase">🏆 Gran Final</div>
+                                <div class="multiplier-value" style="color:#ecd06f; font-size:2.8rem;">×5</div>
+                                <div class="multiplier-desc">La prueba máxima de resistencia estadística</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Reference Card -->
+                    <div class="rules-section card" style="background: linear-gradient(135deg, rgba(236,208,111,0.08), rgba(201,168,50,0.04)); border: 1px solid rgba(236,208,111,0.25);">
+                        <div class="rules-section-header">
+                            <span class="rules-section-icon">⚡</span>
+                            <h3 class="outfit">Guía Rápida — Campos a Completar por Partido</h3>
+                        </div>
+                        <div class="quick-ref-grid">
+                            <div class="quick-ref-item">
+                                <i class="fa-solid fa-futbol text-gold"></i>
+                                <div>
+                                    <strong>Marcador Final</strong>
+                                    <p>Goles Local y Visitante al final del partido reglamentario.</p>
+                                </div>
+                            </div>
+                            <div class="quick-ref-item">
+                                <i class="fa-solid fa-hourglass-half" style="color:#60a5fa;"></i>
+                                <div>
+                                    <strong>Goles 1er Tiempo</strong>
+                                    <p>Cuántos goles marcó cada equipo en la primera mitad (45 min).</p>
+                                </div>
+                            </div>
+                            <div class="quick-ref-item">
+                                <i class="fa-solid fa-hourglass-end" style="color:#a78bfa;"></i>
+                                <div>
+                                    <strong>Goles 2º Tiempo</strong>
+                                    <p>Cuántos goles marcó cada equipo exclusivamente en la segunda mitad.</p>
+                                </div>
+                            </div>
+                            <div class="quick-ref-item">
+                                <i class="fa-solid fa-toggle-on" style="color:#34d399;"></i>
+                                <div>
+                                    <strong>BTTS (Ambos Anotan)</strong>
+                                    <p>Variable binaria: ¿Anotarán ambos equipos al menos un gol?</p>
+                                </div>
+                            </div>
+                            <div class="quick-ref-item">
+                                <i class="fa-solid fa-square" style="color:#ecd06f;"></i>
+                                <div>
+                                    <strong>Tarjetas Amarillas</strong>
+                                    <p>Número exacto total de tarjetas amarillas en el partido.</p>
+                                </div>
+                            </div>
+                            <div class="quick-ref-item">
+                                <i class="fa-solid fa-square" style="color:#ef4444;"></i>
+                                <div>
+                                    <strong>Tarjetas Rojas</strong>
+                                    <p>Número exacto total de tarjetas rojas en el partido.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </section>
 
             <!-- SECTION: LEADERBOARD -->
@@ -418,6 +793,14 @@
                     <p class="section-desc" data-i18n="leaderboard-desc">Consulta el puntaje en vivo y ranking de todos los participantes.</p>
                 </div>
 
+                <!-- LEADERBOARD SUB-TABS -->
+                <div class="leaderboard-subtabs mb-3" id="leaderboard-subtabs-container" style="display:none; gap:0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 1rem;">
+                    <button class="tab-btn btn-xs active" id="subtab-global" onclick="switchLeaderboardSubtab('GLOBAL_LIGA_2026')" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">
+                        <i class="fa-solid fa-earth-americas"></i> Tabla General
+                    </button>
+                    <!-- Private subtabs will be dynamically injected here -->
+                </div>
+
                 <!-- PRIZE POOL CARD -->
                 <div class="prize-pool-card card mb-4">
                     <div class="prize-pool-content">
@@ -425,9 +808,10 @@
                             <span class="prize-pool-label"><i class="fa-solid fa-gift" style="color: var(--accent-gold); margin-right: 0.5rem;"></i>BOTE DE PREMIO ACUMULADO</span>
                             <h2 class="prize-pool-amount outfit" id="prize-pool-amount">$0.00</h2>
                             <p class="prize-pool-desc" id="prize-pool-participants">Cargando participantes...</p>
+                            <p class="prize-pool-legal" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">Premio al mejor analista deportivo del mundial, según el contrato de acceso VIP, etc.</p>
                         </div>
                         <div class="prize-pool-image-wrapper">
-                            <img id="prize-pool-img" src="./Recursos/PocoDinero.png" alt="Bote de premio">
+                            <canvas id="prize-3d-canvas" style="width: 120px; height: 120px; display: block;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -438,11 +822,6 @@
                         <i class="fa-solid fa-users text-primary"></i>
                         <h3 id="stat-total-users">0</h3>
                         <p data-i18n="stat-label-players">Jugadores Activos</p>
-                    </div>
-                    <div class="stat-card card text-center">
-                        <i class="fa-solid fa-file-pen text-gold"></i>
-                        <h3 id="stat-total-predictions">0</h3>
-                        <p data-i18n="stat-label-predictions">Predicciones Totales</p>
                     </div>
                     <div class="stat-card card text-center">
                         <i class="fa-solid fa-circle-check text-success"></i>
@@ -508,117 +887,125 @@
             <!-- SECTION: TRIBUTE (EL ÚLTIMO BAILE) -->
             <section id="sec-tribute" class="content-section">
                 <div class="tribute-header text-center mb-4">
-                    <h2 class="outfit section-title" data-i18n="tribute-title">El Último Baile</h2>
-                    <p class="section-desc" data-i18n="tribute-desc">Un homenaje al legado de tres colosos en su probable última copa del mundo.</p>
+                    <h2 class="outfit section-title" data-i18n="tribute-title">Álbum Cyborg Mundial 2026</h2>
+                    <p class="section-desc" data-i18n="tribute-desc">Colecciona y analiza las cartas exclusivas de los mejores jugadores cyborg del mundial en tiempo real.</p>
                 </div>
 
-                <div class="tribute-grid">
-                    <!-- MESSI CARD -->
-                    <div class="tribute-card card messi-theme">
-                        <div class="tribute-hero-bg messi-bg"></div>
-                        <div class="tribute-card-content">
-                            <div class="tribute-header-info">
-                                <div class="nation-flag arg-flag"></div>
-                                <h3 class="outfit">Lionel Messi</h3>
-                                <span class="tribute-status" data-i18n="messi-status">La Leyenda Eterna</span>
-                            </div>
-                            <div class="tribute-quote">
-                                <p>"Es el último mundial de mi carrera. Intentaremos disfrutar cada segundo y luchar hasta el final."</p>
-                            </div>
-                            <div class="tribute-stats-block">
-                                <div class="tribute-stat">
-                                    <span class="val">10</span>
-                                    <span class="lbl">Dorsal</span>
-                                </div>
-                                <div class="tribute-stat">
-                                    <span class="val">5</span>
-                                    <span class="lbl" data-i18n="tribute-label-cups">Mundiales</span>
-                                </div>
-                                <div class="tribute-stat">
-                                    <span class="val">1</span>
-                                    <span class="lbl" data-i18n="tribute-label-titles">Títulos</span>
-                                </div>
-                            </div>
-                            <div class="tribute-timeline">
-                                <label data-i18n="tribute-timeline-label">Progreso Mundial 2026</label>
-                                <div class="progress-bar-wrapper">
-                                    <div class="progress-bar" style="width: 100%"></div>
-                                </div>
-                                <span class="progress-text" data-i18n="tribute-timeline-messi">Listo para debutar vs Sudáfrica</span>
-                            </div>
+                <div class="tribute-container" style="position:relative; min-height:450px;">
+                    <!-- Paywall Overlay -->
+                    <div id="tribute-paywall" class="paywall-overlay hidden">
+                        <div class="paywall-content card text-center">
+                            <div class="paywall-lock-icon"><i class="fa-solid fa-lock text-gold"></i></div>
+                            <h3 class="outfit">Álbum de Leyendas Cyborg VIP</h3>
+                            <p>Accede al álbum coleccionable de cromos biónicos de los 48 mejores jugadores de la Copa Mundial 2026. Analiza sus modificaciones cibernéticas y destellos de energía exclusivos. Adquiere tu Pase VIP por un pago único de $5.00 USD.</p>
+                            <button class="btn btn-gold mt-3" onclick="openCheckoutModal()">Activar Pase VIP</button>
                         </div>
                     </div>
 
-                    <!-- CR7 CARD -->
-                    <div class="tribute-card card cr7-theme">
-                        <div class="tribute-hero-bg cr7-bg"></div>
-                        <div class="tribute-card-content">
-                            <div class="tribute-header-info">
-                                <div class="nation-flag por-flag"></div>
-                                <h3 class="outfit">Cristiano Ronaldo</h3>
-                                <span class="tribute-status" data-i18n="cr7-status">El Comandante</span>
+                    <!-- Tribute content (only visible to VIPs) -->
+                    <div id="tribute-portal-content" class="hidden">
+                        <!-- DAILY REWARD CONTAINER -->
+                        <div class="daily-reward-bar flex-between flex-wrap mb-4" style="gap: 1rem; background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(9, 15, 23, 0.6) 100%); padding: 1.25rem 1.5rem; border-radius: 8px; border: 1px solid var(--accent-gold); backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(212,175,55,0.1);">
+                            <div class="daily-reward-info">
+                                <h4 class="outfit" style="color:var(--accent-gold); margin:0 0 0.25rem 0; font-size:1rem; display:flex; align-items:center; gap:0.5rem;"><i class="fa-solid fa-gift"></i> Recompensa Diaria Cyborg</h4>
+                                <p style="font-size:0.75rem; color:var(--text-secondary); margin:0;">Reclama un sobre con un cromo cyborg aleatorio gratis cada 24 horas.</p>
                             </div>
-                            <div class="tribute-quote">
-                                <p>"El récord más hermoso sería ganar el mundial con Portugal. No persigo récords, los récords me persiguen a mí."</p>
+                            <div class="daily-reward-action" style="display:flex; align-items:center; gap:1rem;">
+                                <span id="daily-claim-timer" style="font-size:0.8rem; color:var(--text-muted); font-family:monospace; font-weight:700;"></span>
+                                <button id="btn-claim-daily" class="btn btn-gold py-1 px-3" onclick="claimDailyCard()" style="font-size:0.8rem; border-radius:4px; font-weight:700;">
+                                    <i class="fa-solid fa-box-open"></i> Reclamar Cromo
+                                </button>
                             </div>
-                            <div class="tribute-stats-block">
-                                <div class="tribute-stat">
-                                    <span class="val">7</span>
-                                    <span class="lbl">Dorsal</span>
-                                </div>
-                                <div class="tribute-stat">
-                                    <span class="val">5</span>
-                                    <span class="lbl" data-i18n="tribute-label-cups">Mundiales</span>
-                                </div>
-                                <div class="tribute-stat">
-                                    <span class="val">0</span>
-                                    <span class="lbl" data-i18n="tribute-label-titles">Títulos</span>
-                                </div>
+                        </div>
+
+                        <!-- ALBUM HEADER / CONTROLS -->
+                        <div class="album-controls-bar flex-between flex-wrap mb-4" style="gap: 1rem; background: rgba(255,255,255,0.02); padding: 1.25rem 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); backdrop-filter: blur(10px);">
+                            <div class="album-stats">
+                                <span style="font-size:0.75rem; color:var(--text-secondary); display:block; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Cromos Coleccionados:</span>
+                                <strong id="album-collected-count" style="color:var(--accent-gold); font-size:1.3rem; text-shadow:0 0 10px rgba(212,175,55,0.2);">0 / 48 Cartas</strong>
                             </div>
-                            <div class="tribute-timeline">
-                                <label data-i18n="tribute-timeline-label">Progreso Mundial 2026</label>
-                                <div class="progress-bar-wrapper">
-                                    <div class="progress-bar" style="width: 100%"></div>
-                                </div>
-                                <span class="progress-text" data-i18n="tribute-timeline-cr7">Preparado para el debut del Grupo K</span>
+                            <!-- SEARCH & FILTERS -->
+                            <div class="album-search-wrapper" style="position:relative; flex:1; max-width:400px; display:flex; align-items:center;">
+                                <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted); position:absolute; left: 0.75rem; pointer-events:none;"></i>
+                                <input type="text" id="album-search-input" onkeyup="filterAlbum()" placeholder="Buscar por nombre o país..." style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:4px; padding:0.5rem 0.75rem 0.5rem 2.2rem; color:#fff; font-size:0.85rem; outline:none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent-gold)'" onblur="this.style.borderColor='var(--border-color)'">
                             </div>
+                        </div>
+
+                        <!-- FILTERS -->
+                        <div class="portal-filters flex-align flex-wrap mb-4" style="gap: 0.5rem; justify-content: center;">
+                            <button class="filter-tab active" id="btn-album-all" onclick="filterAlbumCategory('all')">Todos</button>
+                            <button class="filter-tab" id="btn-album-speed" onclick="filterAlbumCategory('Speed')">Full Speed</button>
+                            <button class="filter-tab" id="btn-album-chilena" onclick="filterAlbumCategory('Chilena')">Chilena</button>
+                            <button class="filter-tab" id="btn-album-bicicleta" onclick="filterAlbumCategory('Bicicleta')">Bicicleta</button>
+                            <button class="filter-tab" id="btn-album-libre" onclick="filterAlbumCategory('Tiro Libre')">Tiro Libre</button>
+                            <button class="filter-tab" id="btn-album-portero" onclick="filterAlbumCategory('Portero')">Portero</button>
+                            <button class="filter-tab" id="btn-album-cabezazo" onclick="filterAlbumCategory('Cabezazo')">Cabezazo</button>
+                        </div>
+
+                        <!-- CARDS GRID -->
+                        <div class="album-cards-grid" id="album-cards-container">
+                            <!-- Injected by JS -->
                         </div>
                     </div>
+                </div>
+            </section>
 
-                    <!-- NEYMAR CARD -->
-                    <div class="tribute-card card neymar-theme">
-                        <div class="tribute-hero-bg neymar-bg"></div>
-                        <div class="tribute-card-content">
-                            <div class="tribute-header-info">
-                                <div class="nation-flag bra-flag"></div>
-                                <h3 class="outfit">Neymar Jr</h3>
-                                <span class="tribute-status" data-i18n="neymar-status">El Mago del Jogo Bonito</span>
-                            </div>
-                            <div class="tribute-quote">
-                                <p>"Quiero dejar mi nombre escrito en la historia de Brasil. Este mundial daré todo de mí."</p>
-                            </div>
-                            <div class="tribute-stats-block">
-                                <div class="tribute-stat">
-                                    <span class="val">10</span>
-                                    <span class="lbl">Dorsal</span>
-                                </div>
-                                <div class="tribute-stat">
-                                    <span class="val">3</span>
-                                    <span class="lbl" data-i18n="tribute-label-cups">Mundiales</span>
-                                </div>
-                                <div class="tribute-stat">
-                                    <span class="val">0</span>
-                                    <span class="lbl" data-i18n="tribute-label-titles">Títulos</span>
-                                </div>
-                            </div>
-                            <div class="tribute-timeline">
-                                <label data-i18n="tribute-timeline-label">Progreso Mundial 2026</label>
-                                <div class="progress-bar-wrapper">
-                                    <div class="progress-bar" style="width: 100%"></div>
-                                </div>
-                                <span class="progress-text" data-i18n="tribute-timeline-neymar">Listo para brillar en el Grupo C</span>
+            <!-- SECTION: ADMIN PRIVADA (para organizadores de quinielas privadas) -->
+            <section id="sec-admin-quiniela" class="content-section">
+                <div class="admin-panel-header text-center mb-4">
+                    <h2 class="outfit section-title" id="admin-priv-title" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i class="fa-solid fa-crown" style="color:var(--accent-gold);"></i> Administrar Quiniela</h2>
+                    <p class="section-desc">Gestiona los participantes, modifica el nombre y genera enlaces de invitación.</p>
+                </div>
+
+                <!-- CARD: MODIFICAR E INVITAR -->
+                <div class="admin-card card mb-4" style="border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02);">
+                    <div class="admin-card-header" style="display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fa-solid fa-circle-info" style="color:var(--accent-gold);"></i>
+                        <h3 class="outfit" style="margin:0; font-size: 1.1rem; color: #fff;">Información y Configuración</h3>
+                    </div>
+                    <div style="margin-top:1rem;">
+                        <div class="input-group">
+                            <label for="admin-priv-name-input">Nombre de la Quiniela Privada</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-signature"></i>
+                                <input type="text" id="admin-priv-name-input" placeholder="Ej. Mi Quiniela Familiar">
                             </div>
                         </div>
+                        
+                        <div style="display:flex; gap:1rem; margin-top:1.5rem; flex-wrap:wrap;">
+                            <button class="btn btn-gold" onclick="updatePrivateQuinielaName()">
+                                <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+                            </button>
+                            <button class="btn btn-primary" onclick="copyPrivateInviteLink()">
+                                <i class="fa-solid fa-share-nodes"></i> Copiar Enlace de Invitación
+                            </button>
+                        </div>
+                        <div id="admin-priv-invite-url-box" class="alert alert-success hidden mt-3" style="font-size:0.85rem; word-break:break-all;"></div>
+                        <div id="admin-priv-alert" class="alert alert-danger hidden mt-3"></div>
+                    </div>
+                </div>
+
+                <!-- STANDINGS AND PREDICTIONS MATRIX -->
+                <div class="admin-card card" style="border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02);">
+                    <div class="admin-card-header mb-3" style="display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fa-solid fa-ranking-star" style="color:var(--accent-gold);"></i>
+                        <h3 class="outfit" style="margin:0; font-size: 1.1rem; color: #fff;">Tabla de Posiciones</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%; text-align: center;">Puesto</th>
+                                    <th style="text-align: left;">Jugador</th>
+                                    <th style="width: 20%; text-align: center;">Pts Grupos</th>
+                                    <th style="width: 20%; text-align: center;">Pts Playoffs</th>
+                                    <th style="width: 20%; text-align: center;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-priv-leaderboard-body">
+                                <!-- Private leaderboard populated by JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -680,7 +1067,170 @@
                         <i class="fa-solid fa-rotate"></i> Actualizar Stats
                     </button>
                 </div>
+
+                <!-- BRANDING CUSTOMIZATION -->
+                <div class="admin-card card" style="margin-top:1.5rem;">
+                    <div class="admin-card-header">
+                        <i class="fa-solid fa-palette" style="color:var(--gold);"></i>
+                        <h3 class="outfit">Personalización de Marca (VIP Premium)</h3>
+                    </div>
+                    <p class="admin-card-desc">Personaliza la identidad visual de tu liga. Sube un logotipo y cambia el nombre de la liga.</p>
+                    <div class="admin-branding-form">
+                        <div class="input-group">
+                            <label for="admin-brand-name">Nombre de la Liga</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-signature"></i>
+                                <input type="text" id="admin-brand-name" placeholder="Ej. LIGA FAMILIAR PÉREZ">
+                            </div>
+                        </div>
+                        <div class="input-group mt-2">
+                            <label for="admin-brand-logo">URL del Logotipo (Imagen)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-image"></i>
+                                <input type="url" id="admin-brand-logo" placeholder="https://ejemplo.com/mi-logo.png">
+                            </div>
+                        </div>
+                        <button id="admin-branding-btn" class="btn btn-gold mt-3" onclick="adminSaveBranding()">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Personalización
+                        </button>
+                    </div>
+                </div>
             </section>
+
+            <!-- SECTION: CHAT / MURO DE DEBATE -->
+            <section id="sec-chat" class="content-section">
+                <div class="chat-header text-center mb-4">
+                    <h2 class="outfit section-title"><i class="fa-solid fa-comments text-gold"></i> Muro de Debate</h2>
+                    <p class="section-desc">Discute los resultados de los partidos en vivo con el resto de participantes VIP.</p>
+                </div>
+                
+                <div class="chat-container card p-0 overflow-hidden" style="position:relative; min-height:450px;">
+                    <div id="chat-paywall" class="paywall-overlay hidden">
+                        <div class="paywall-content card text-center">
+                            <div class="paywall-lock-icon"><i class="fa-solid fa-lock text-gold"></i></div>
+                            <h3 class="outfit">Sección VIP - Muro de Debate</h3>
+                            <p>Interactúa con otros jugadores de la liga en tiempo real. Adquiere tu Pase VIP por un pago único de $5.00 USD.</p>
+                            <button class="btn btn-gold mt-3" onclick="openCheckoutModal()">Activar Pase VIP</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages-box" id="chat-messages" style="height:350px; overflow-y:auto; padding:1rem;">
+                        <!-- Chat messages injected by JS -->
+                    </div>
+                    
+                    <div class="chat-input-bar" style="display:flex; padding:0.75rem; border-top:1px solid var(--border-color); background:rgba(255,255,255,0.02);">
+                        <input type="text" id="chat-input" placeholder="Escribe un mensaje..." style="flex:1; background:rgba(0,0,0,0.2); border:1px solid var(--border-color); border-radius:4px; padding:0.5rem 1rem; color:#fff; margin-right:0.5rem;" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                        <button class="btn btn-gold" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: ANALÍTICA VIP -->
+            <section id="sec-analytics" class="content-section">
+                <div class="analytics-header text-center mb-4">
+                    <h2 class="outfit section-title"><i class="fa-solid fa-chart-line text-gold"></i> Inteligencia de Datos VIP</h2>
+                    <p class="section-desc">Estadísticas avanzadas, tendencias de la comunidad global y curiosidades deportivas.</p>
+                </div>
+                
+                <div class="analytics-container" style="position:relative; min-height:450px;">
+                    <div id="analytics-paywall" class="paywall-overlay hidden">
+                        <div class="paywall-content card text-center">
+                            <div class="paywall-lock-icon"><i class="fa-solid fa-lock text-gold"></i></div>
+                            <h3 class="outfit">Sección VIP - Inteligencia de Datos</h3>
+                            <p>Visualiza qué opina la comunidad global y analiza estadísticas históricas avanzadas. Adquiere tu Pase VIP por un pago único de $5.00 USD.</p>
+                            <button class="btn btn-gold mt-3" onclick="openCheckoutModal()">Activar Pase VIP</button>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
+                        <!-- Trends Card -->
+                        <div class="analytics-card card">
+                            <h3 class="outfit mb-3"><i class="fa-solid fa-square-poll-horizontal text-gold"></i> Tendencia de Predicciones VIP</h3>
+                            <p class="card-desc mb-4" style="font-size:0.8rem; color:var(--text-secondary);">Inteligencia colectiva: muestra el porcentaje acumulado de predicciones locales, empates y visitantes en la liga.</p>
+                            <div class="trends-list" id="trends-container" style="display:flex; flex-direction:column; gap:1rem;">
+                                <!-- Match Trends (bars) injected by JS -->
+                                <p class="text-center text-muted">Cargando tendencias...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Curiosidades Card -->
+                        <div class="analytics-card card">
+                            <h3 class="outfit mb-3"><i class="fa-solid fa-lightbulb text-gold"></i> Sabías Que... (Curiosidades)</h3>
+                            <p class="card-desc mb-4" style="font-size:0.8rem; color:var(--text-secondary);">Fichas de infotenimiento para mejorar tus análisis previos a cada jornada del mundial.</p>
+                            <div class="trivia-deck" style="display:flex; flex-direction:column; gap:1rem;">
+                                <div class="trivia-card" style="display:flex; gap:1rem; padding:1rem; background:rgba(255,255,255,0.02); border-radius:8px; border-left:3px solid var(--accent-gold);">
+                                    <div class="trivia-icon" style="color:var(--accent-gold); font-size:1.2rem;"><i class="fa-solid fa-futbol"></i></div>
+                                    <p class="trivia-text" style="font-size:0.85rem; margin:0;"><strong>El mundial del centenario:</strong> Se jugará en 16 sedes de tres países de Norteamérica, siendo la copa más grande de la historia con 48 selecciones.</p>
+                                </div>
+                                <div class="trivia-card" style="display:flex; gap:1rem; padding:1rem; background:rgba(255,255,255,0.02); border-radius:8px; border-left:3px solid var(--accent-gold);">
+                                    <div class="trivia-icon" style="color:var(--accent-gold); font-size:1.2rem;"><i class="fa-solid fa-clock"></i></div>
+                                    <p class="trivia-text" style="font-size:0.85rem; margin:0;"><strong>El primer partido:</strong> México inaugurará el torneo en el histórico Estadio Azteca el 11 de junio de 2026, convirtiéndose en el primer estadio en albergar tres mundiales.</p>
+                                </div>
+                                <div class="trivia-card" style="display:flex; gap:1rem; padding:1rem; background:rgba(255,255,255,0.02); border-radius:8px; border-left:3px solid var(--accent-gold);">
+                                    <div class="trivia-icon" style="color:var(--accent-gold); font-size:1.2rem;"><i class="fa-solid fa-star"></i></div>
+                                    <p class="trivia-text" style="font-size:0.85rem; margin:0;"><strong>El último baile:</strong> Lionel Messi (38 años) y Cristiano Ronaldo (41 años) podrían cruzarse en rondas de eliminación por primera vez en un mundial.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODAL: CHECKOUT BINANCE PAY (SIMULADO) -->
+            <div id="checkout-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeCheckoutModal()">
+                <div class="modal-card card checkout-card" style="max-width:450px;">
+                    <div class="modal-header">
+                        <h3 class="outfit"><i class="fa-solid fa-gem text-gold"></i> Pase VIP - Confirmación de Pago</h3>
+                        <button class="modal-close-btn" onclick="closeCheckoutModal()">&times;</button>
+                    </div>
+                    
+                    <div class="checkout-body text-center" style="padding:1.5rem 1rem;">
+                        <p class="checkout-desc" style="font-size:0.85rem; color:var(--text-secondary); line-height:1.4;">Adquiere tu Pase VIP para desbloquear ligas privadas, chat, analíticas y más. El pago es de un único pago de <strong>$5.00 USDT</strong>.</p>
+                        
+                        <div class="checkout-selection mt-3" style="margin-bottom:1rem;">
+                            <label for="checkout-method" style="font-size:0.8rem; font-weight:600; display:block; margin-bottom:0.25rem;">Método de Pago:</label>
+                            <select id="checkout-method" onchange="updateCheckoutMethod()" style="background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:4px; padding:0.4rem; color:#fff; width:100%;">
+                                <option value="binance">Binance Pay (USDT)</option>
+                                <option value="telegram">Telegram (USDT / TON)</option>
+                            </select>
+                        </div>
+
+                        <div id="checkout-binance-section">
+                            <div class="checkout-selection mt-3" style="margin-bottom:1rem;">
+                                <label for="checkout-network" style="font-size:0.8rem; font-weight:600; display:block; margin-bottom:0.25rem;">Selecciona la Red:</label>
+                                <select id="checkout-network" onchange="updateCheckoutQR()" style="background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:4px; padding:0.4rem; color:#fff; width:100%;">
+                                    <option value="bsc">Binance Smart Chain (BEP-20)</option>
+                                    <option value="tron">TRON (TRC-20)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="qr-container mt-4" style="background:#fff; padding:1rem; display:inline-block; border-radius:8px; margin-bottom:1rem;">
+                                <img id="checkout-qr" src="" alt="Código QR de Pago" style="width:160px; height:160px; display:block; margin:0 auto;">
+                            </div>
+                            
+                            <div class="wallet-address-box flex-between" style="background:rgba(0,0,0,0.2); border:1px solid var(--border-color); border-radius:4px; padding:0.4rem 0.8rem; font-size:0.75rem; margin-bottom:1rem;">
+                                <span id="wallet-address" class="wallet-text" style="word-break:break-all; font-family:monospace; color:var(--accent-gold);">Cargando...</span>
+                                <button class="btn btn-xs btn-ghost" onclick="copyWalletAddress()"><i class="fa-solid fa-copy"></i></button>
+                            </div>
+                            
+                            <div class="checkout-warning" style="background:rgba(217,119,6,0.1); border:1px solid #d97706; border-radius:6px; padding:0.75rem; font-size:0.75rem; text-align:left; color:#f59e0b;">
+                                <p style="margin:0;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:0.25rem;"></i> <strong>Importante:</strong> Prohíbe explícitamente colocar palabras clave como "apuestas", "quiniela", "fútbol" o "mundial" en los conceptos de pago de Binance. Usa solo códigos de orden numéricos.</p>
+                            </div>
+                        </div>
+
+                        <div id="checkout-telegram-section" style="display:none; padding:1rem 0.5rem; text-align:left;">
+                            <div class="checkout-warning" style="background:rgba(26,115,232,0.1); border:1px solid #1a73e8; border-radius:6px; padding:0.75rem; font-size:0.8rem; color:#8ab4f8; margin-bottom:1.5rem;">
+                                <p style="margin:0 0 0.5rem;"><i class="fa-brands fa-telegram" style="margin-right:0.25rem; font-size:1.1rem; vertical-align:middle;"></i> <strong>Pago vía Telegram:</strong></p>
+                                <p style="margin:0; line-height:1.4;">Para pagar mediante Telegram, envía un mensaje privado a nuestro bot oficial de soporte <strong><a href="https://t.me/MySportPredictionVIP_Bot" target="_blank" style="color:var(--accent-gold); text-decoration:underline;">@MySportPredictionVIP_Bot</a></strong> para recibir las instrucciones de pago o el enlace directo. Tras la transferencia de <strong>$5.00 USDT</strong> o equivalente, tu pase será activado instantáneamente.</p>
+                            </div>
+                        </div>
+                        
+                        <button id="checkout-simulate-btn" class="btn btn-gold btn-block mt-4" onclick="simulatePaymentSuccess()">
+                            Simular Pago Exitoso <i class="fa-solid fa-circle-check"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
         </main>
     </div>
@@ -743,6 +1293,326 @@
         title="Volumen"
       >
     </div>
+
+    <!-- MODAL: REGISTRO Y LOGIN (AUTH MODAL) -->
+    <div id="auth-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeAuthModal()">
+        <div class="modal-card card auth-card" style="max-width:500px; position:relative; z-index:10;">
+            <div class="modal-header">
+                <h3 class="outfit" id="auth-modal-title"><i class="fa-solid fa-user-plus text-gold"></i> Registrarse en MySportPrediction</h3>
+                <button class="modal-close-btn" onclick="closeAuthModal()">&times;</button>
+            </div>
+            
+            <div id="auth-alert" class="alert alert-danger hidden" style="margin: 0.5rem 1.5rem;"></div>
+            <div id="auth-info-alert" class="alert alert-info hidden" style="margin: 0.5rem 1.5rem;"></div>
+
+            <div style="padding: 1.5rem;">
+                <!-- REGISTRATION FORM -->
+                <form id="auth-register-form" onsubmit="handleRegistration(event)">
+                    <p class="auth-helper-text mb-3" style="font-size:0.85rem; color:var(--text-secondary);">Únete para guardar tu quiniela en la nube y descargar tu PDF de marcadores.</p>
+                    
+                    <div class="input-group">
+                        <label for="reg-name">Nombre Completo</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" id="reg-name" required placeholder="Ej. Lionel Messi">
+                        </div>
+                    </div>
+
+                    <div class="input-group mt-2">
+                        <label for="reg-alias">Alias / Nickname</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user-tag"></i>
+                            <input type="text" id="reg-alias" required placeholder="Ej. Lio10">
+                        </div>
+                    </div>
+
+                    <div class="input-group mt-2">
+                        <label for="reg-email">Correo Electrónico</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" id="reg-email" required placeholder="correo@ejemplo.com">
+                        </div>
+                    </div>
+
+                    <div class="auth-action-buttons mt-4" style="display:flex; flex-direction:column; gap:0.75rem;">
+                        <button type="submit" id="btn-reg-f2p" class="btn btn-secondary btn-block py-2">
+                            <i class="fa-solid fa-user-pen"></i> Registrar Gratis (F2P)
+                        </button>
+                        <button type="submit" id="btn-reg-vip" class="btn btn-gold btn-block py-2">
+                            <i class="fa-solid fa-gem"></i> Registrar como VIP 💎
+                        </button>
+                    </div>
+
+                    <p class="auth-toggle-link text-center mt-3" style="font-size:0.85rem; margin:0;">
+                        ¿Ya tienes cuenta? <a href="#" onclick="toggleAuthForm('login'); event.preventDefault();" style="color:var(--accent-gold); text-decoration:underline;">Inicia Sesión aquí</a>
+                    </p>
+                    <p style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:0.75rem; line-height:1.5;">
+                        Al registrarte aceptas nuestros
+                        <a href="./terms.html" target="_blank" style="color:var(--accent-gold); text-decoration:underline;">Términos y Condiciones</a>
+                        y la
+                        <a href="./cookies.html" target="_blank" style="color:var(--accent-gold); text-decoration:underline;">Política de Cookies</a>.
+                    </p>
+                </form>
+
+                <!-- LOGIN FORM -->
+                <form id="auth-login-form" class="hidden" onsubmit="handleAuthLogin(event)">
+                    <p class="auth-helper-text mb-3" style="font-size:0.85rem; color:var(--text-secondary);">Ingresa tus credenciales para cargar tu quiniela guardada.</p>
+                    
+                    <div class="input-group">
+                        <label for="login-auth-email">Correo Electrónico</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" id="login-auth-email" required placeholder="correo@ejemplo.com">
+                        </div>
+                    </div>
+
+                    <div class="input-group mt-2">
+                        <label for="login-auth-key">Key de Acceso (4 caracteres)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-key"></i>
+                            <input type="password" id="login-auth-key" required placeholder="Clave de 4 dígitos/letras">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="auth-login-submit-btn" class="btn btn-gold btn-block mt-4">
+                        <span>Ingresar</span> <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                    <p class="auth-toggle-link text-center mt-3" style="font-size:0.85rem; margin:0;">
+                        ¿No tienes cuenta? <a href="#" onclick="toggleAuthForm('register'); event.preventDefault();" style="color:var(--accent-gold); text-decoration:underline;">Regístrate aquí</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS REGISTRATION MODAL -->
+    <div id="reg-success-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeRegSuccessModal()">
+        <div class="modal-card card success-card" style="max-width:450px; text-align:center;">
+            <div class="success-icon-wrapper">
+                <i class="fa-solid fa-circle-check text-success"></i>
+            </div>
+            <h2 class="outfit mt-3" style="color: var(--accent-gold);">¡Registro Exitoso!</h2>
+            <p class="mt-2 text-secondary" style="font-size:0.85rem;">Guarda esta clave. Es tu llave de acceso para volver a iniciar sesión.</p>
+            
+            <div class="success-details-box mt-4" style="background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:8px; padding:1rem;">
+                <div class="detail-item">
+                    <span style="font-size:0.8rem; color:var(--text-secondary);">Tu Key de Acceso:</span>
+                    <strong id="reg-success-key" class="text-glow" style="color:var(--accent-gold); font-size:1.8rem; letter-spacing: 2px; display:block; margin:0.25rem 0;">XXXX</strong>
+                </div>
+                <div class="detail-item mt-2">
+                    <span style="font-size:0.8rem; color:var(--text-secondary);">Rango Asignado:</span>
+                    <strong id="reg-success-rango" style="color:#fff; display:block;">F2P</strong>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block mt-4" onclick="closeRegSuccessModal()">
+                Entrar a la Quiniela <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: CREAR QUINIELA (VIP/PARTICIPANTE) -->
+<div id="create-quiniela-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeCreateQuinielaModal()">
+  <div class="modal-card card" style="max-width:500px; position:relative; z-index:10; background: #0a121c; border: 2px solid var(--accent-gold); box-shadow: 0 0 30px rgba(212,175,55,0.15); padding: 0;">
+    <div class="modal-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+      <h3 class="outfit" style="color: var(--accent-gold); margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-plus-circle"></i> Crear Quiniela</h3>
+      <button class="modal-close-btn" onclick="closeCreateQuinielaModal()" style="font-size: 1.5rem; color: var(--text-secondary); background: transparent; border: none; cursor: pointer;">&times;</button>
+    </div>
+    
+    <div id="modal-create-error" class="alert alert-danger hidden" style="margin: 1rem 1.5rem 0 1.5rem;"></div>
+    
+    <div style="padding: 1.5rem;">
+      <form id="modal-create-form" onsubmit="handleModalCreateQuiniela(event)">
+        <div class="input-group">
+          <label for="modal-create-email">Correo del Organizador</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="modal-create-email" required placeholder="tu-correo@ejemplo.com">
+          </div>
+        </div>
+        
+        <div class="input-group mt-3">
+          <label>Tipo de Quiniela</label>
+          <div class="radio-group-vertical">
+            <label class="radio-label">
+              <input type="radio" name="modal-create-type" value="Completa" checked>
+              <span class="radio-custom-box">
+                <strong>Completa</strong>
+                <small>Predice todo el torneo antes del inicio.</small>
+              </span>
+            </label>
+            <label class="radio-label mt-2" style="display: block;">
+              <input type="radio" name="modal-create-type" value="Por fase">
+              <span class="radio-custom-box">
+                <strong>Por fase</strong>
+                <small>Primero Fase de Grupos, luego Playoffs.</small>
+              </span>
+            </label>
+          </div>
+        </div>
+        
+        <input type="hidden" id="modal-org-level" name="modal-org-level" value="Privada">
+        
+        <button type="submit" id="modal-create-submit" class="btn btn-primary btn-block mt-4" style="width: 100%;">
+          <span>Crear Quiniela</span> <i class="fa-solid fa-plus"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+    <!-- MODAL: APERTURA DE SOBRE CYBORG -->
+<div id="modal-pack-reveal" class="modal-overlay" style="display:none; background: rgba(5, 7, 12, 0.95); z-index: 100000;">
+  <div class="pack-reveal-wrapper" style="position: relative; width: 100%; max-width: 500px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    
+    <!-- Particle canvas background for the burst -->
+    <canvas id="pack-reveal-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+    
+    <!-- 3D Pack Container -->
+    <div id="pack-3d-container" onclick="openDailyPack()" style="position: relative; width: 280px; height: 380px; cursor: pointer; perspective: 1200px; z-index: 5; transition: transform 0.3s;">
+      
+      <!-- Split-open pack cover layers (Left/Right) -->
+      <div class="pack-half pack-left" style="position: absolute; left: 0; top: 0; width: 50%; height: 100%; background: url('./Recursos/pack_reveal.png') no-repeat left center; background-size: cover; border-right: 1px solid rgba(255,255,255,0.15); transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: left center; z-index: 10; box-shadow: -10px 10px 30px rgba(0,0,0,0.5);"></div>
+      <div class="pack-half pack-right" style="position: absolute; right: 0; top: 0; width: 50%; height: 100%; background: url('./Recursos/pack_reveal.png') no-repeat right center; background-size: cover; transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: right center; z-index: 10; box-shadow: 10px 10px 30px rgba(0,0,0,0.5);"></div>
+      
+      <!-- Reveal core glow behind the splits -->
+      <div class="pack-reveal-glow" style="position: absolute; inset: 10px; background: radial-gradient(circle, rgba(0,242,254,0.4) 0%, rgba(181,0,255,0.2) 60%, transparent 100%); opacity: 0; transition: opacity 0.5s; z-index: 2; pointer-events: none; border-radius: 12px; filter: blur(5px);"></div>
+      
+      <!-- The inner card itself, initially hidden and scales up -->
+      <div class="pack-inner-card-holder" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transform: scale(0.6) rotateY(180deg); opacity: 0; transition: all 0.9s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 3;">
+        <!-- Injected card HTML goes here -->
+      </div>
+    </div>
+    
+    <!-- Instruction label -->
+    <div id="pack-instruction-label" style="position: relative; z-index: 12; margin-top: 2rem; color: #fff; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--accent-gold); animation: pulseText 1.5s infinite; cursor: pointer;" onclick="openDailyPack()">
+      ¡Haz clic para abrir el sobre!
+    </div>
+    
+    <!-- Continue CTA after reveal -->
+    <button id="btn-pack-continue" class="btn btn-gold mt-4" onclick="closePackRevealModal()" style="position: relative; z-index: 12; display: none; padding: 0.6rem 2.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; box-shadow: var(--shadow-gold);">
+      Agregar a mi Colección <i class="fa-solid fa-circle-check"></i>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL: DETALLES DE CARTA CYBORG -->
+    <div id="modal-card-detail" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeCardDetailModal()">
+        <div class="modal-card card card-detail-zoom-card" style="max-width:600px; padding:0; overflow:hidden; border:2px solid var(--accent-gold); box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); background: #0a121c;">
+            <div class="modal-header" style="position:absolute; right:1rem; top:1rem; border:none; z-index:10; background:transparent; padding:0;">
+                <button class="modal-close-btn" onclick="closeCardDetailModal()" style="font-size:2rem; text-shadow:0 0 5px rgba(0,0,0,0.8); color:#fff; opacity:0.8; border:none; background:transparent;">&times;</button>
+            </div>
+            <div class="card-detail-layout">
+                <!-- Left side: The Card visual -->
+                <div class="card-detail-visual-side" style="background:#050a10; display:flex; justify-content:center; align-items:center; padding:2rem; border-bottom:1px solid var(--border-color); position:relative;">
+                    <div id="zoom-card-container" style="perspective: 1000px;"></div>
+                </div>
+                <!-- Right side: Stats & Info -->
+                <div class="card-detail-info-side" style="padding:1.5rem 2rem; background:rgba(10,18,28,0.95);">
+                    <div class="badge-country-flag mb-2" id="zoom-player-flag-badge" style="color:var(--accent-gold); font-size:0.8rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;"><i class="fa-solid fa-earth-americas"></i> ARGENTINA</div>
+                    <h2 class="outfit text-glow" id="zoom-player-name" style="color:#fff; font-size:1.8rem; margin:0 0 0.25rem 0; text-shadow:0 0 10px rgba(255,255,255,0.1);">Lionel Messi</h2>
+                    <h4 class="outfit" id="zoom-player-national" style="color:var(--text-secondary); margin-bottom:1.25rem; font-size:0.85rem; font-weight:600; border-bottom:1px solid var(--border-color); padding-bottom:0.75rem; letter-spacing: 0.5px;">CYBORG ARGENTINO</h4>
+                    
+                    <div class="zoom-stats-list" style="display:flex; flex-direction:column; gap:1rem;">
+                        <div class="zoom-stat-item">
+                            <span class="lbl" style="font-size:0.7rem; color:var(--text-secondary); display:block; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;"><i class="fa-solid fa-microchip" style="color:var(--accent-gold); margin-right:0.4rem;"></i> Modificación Robótica</span>
+                            <span class="val" id="zoom-player-cyber" style="font-size:0.85rem; color:#e2e8f0; display:block; margin-top:0.25rem; line-height:1.4;">Brazo derecho biónico de cromo pulido y ojo izquierdo con visor cibernético rojo</span>
+                        </div>
+                        <div class="zoom-stat-item">
+                            <span class="lbl" style="font-size:0.7rem; color:var(--text-secondary); display:block; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;"><i class="fa-solid fa-bolt" style="color:var(--accent-gold); margin-right:0.4rem;"></i> Color de Energía / Núcleo</span>
+                            <span class="val" id="zoom-player-energy" style="font-size:0.85rem; color:#e2e8f0; text-transform:capitalize; display:block; margin-top:0.25rem;">Rojo brillante</span>
+                        </div>
+                        <div class="zoom-stat-item">
+                            <span class="lbl" style="font-size:0.7rem; color:var(--text-secondary); display:block; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;"><i class="fa-solid fa-futbol" style="color:var(--accent-gold); margin-right:0.4rem;"></i> Posesión / Movimiento Especial</span>
+                            <span class="val" id="zoom-player-pose" style="font-size:0.85rem; color:#e2e8f0; display:block; margin-top:0.25rem; line-height:1.4;">Conducción a Full Speed esquivando rivales, dejando un rastro de velocidad</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== COOKIE CONSENT BANNER ===== -->
+    <div id="cookie-banner" style="
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 99999;
+        background: rgba(13,14,21,0.97);
+        border-top: 1px solid rgba(236,208,111,0.35);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 1rem 1.5rem;
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
+        animation: slideUpBanner 0.4s ease;
+    ">
+        <style>
+            @keyframes slideUpBanner { from { transform: translateY(100%); opacity:0; } to { transform: translateY(0); opacity:1; } }
+            #cookie-banner-inner {
+                max-width: 1100px;
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                gap: 1.5rem;
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+            #cookie-banner-text { flex: 1; min-width: 260px; }
+            #cookie-banner-text p { font-size: 0.88rem; color: #94a3b8; margin: 0; line-height: 1.5; }
+            #cookie-banner-text strong { color: #e2e8f0; }
+            #cookie-banner-icon { font-size: 1.8rem; flex-shrink: 0; }
+            #cookie-banner-actions { display: flex; gap: 0.75rem; flex-shrink: 0; flex-wrap: wrap; }
+            #cookie-accept-btn {
+                background: linear-gradient(135deg, #ecd06f 0%, #c9a832 100%);
+                color: #0d0e15;
+                border: none;
+                border-radius: 999px;
+                padding: 0.6rem 1.4rem;
+                font-weight: 800;
+                font-size: 0.875rem;
+                cursor: pointer;
+                font-family: 'Inter', sans-serif;
+                transition: transform 0.2s, box-shadow 0.2s;
+                box-shadow: 0 0 18px rgba(236,208,111,0.35);
+            }
+            #cookie-accept-btn:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(236,208,111,0.55); }
+            #cookie-policy-btn {
+                background: transparent;
+                color: #94a3b8;
+                border: 1px solid rgba(47,53,78,0.9);
+                border-radius: 999px;
+                padding: 0.6rem 1.2rem;
+                font-weight: 600;
+                font-size: 0.875rem;
+                cursor: pointer;
+                font-family: 'Inter', sans-serif;
+                transition: all 0.2s;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+            }
+            #cookie-policy-btn:hover { border-color: #ecd06f; color: #ecd06f; }
+        </style>
+        <div id="cookie-banner-inner">
+            <div id="cookie-banner-icon">🍪</div>
+            <div id="cookie-banner-text">
+                <p><strong>MySportPrediction usa cookies y almacenamiento local.</strong> Utilizamos sessionStorage y localStorage para guardar tu sesión, pronósticos y preferencias. No usamos cookies publicitarias.</p>
+            </div>
+            <div id="cookie-banner-actions">
+                <a href="./cookies.html" target="_blank" id="cookie-policy-btn">Ver Política</a>
+                <button id="cookie-accept-btn" onclick="acceptCookies()">✓ Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING RULES BUTTON (bottom-left) -->
+    <button id="rules-fab" class="rules-fab" onclick="switchTab('rules')" title="Ver Reglas Oficiales" style="display:none;">
+        <i class="fa-solid fa-book-open"></i>
+        <span class="rules-fab-label">Reglas</span>
+    </button>
 
 </body>
 </html>
