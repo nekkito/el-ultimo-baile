@@ -627,6 +627,40 @@ function switchOrgAction(action) {
   document.getElementById('org-error').classList.add('hidden');
 }
 
+function toggleOrgMontoField(checkbox) {
+  const container = document.getElementById('org-monto-container');
+  const input = document.getElementById('org-monto-inscripcion');
+  if (container) {
+    if (checkbox.checked) {
+      container.classList.remove('hidden');
+      if (input) input.required = true;
+    } else {
+      container.classList.add('hidden');
+      if (input) {
+        input.required = false;
+        input.value = '';
+      }
+    }
+  }
+}
+
+function toggleModalMontoField(checkbox) {
+  const container = document.getElementById('modal-monto-container');
+  const input = document.getElementById('modal-monto-inscripcion');
+  if (container) {
+    if (checkbox.checked) {
+      container.classList.remove('hidden');
+      if (input) input.required = true;
+    } else {
+      container.classList.add('hidden');
+      if (input) {
+        input.required = false;
+        input.value = '';
+      }
+    }
+  }
+}
+
 function selectBillingLevel(level) {
   const freeCard = document.getElementById('billing-free');
   const premCard = document.getElementById('billing-premium');
@@ -647,6 +681,30 @@ function selectBillingLevel(level) {
     if (privCard) privCard.classList.add('active');
     levelInput.value = 'Privada';
   }
+
+  // Toggle private options container in main form
+  const privateOptions = document.getElementById('org-private-options');
+  const contractCheckbox = document.getElementById('org-acepta-contrato');
+  const tienePozo = document.getElementById('org-tiene-pozo');
+  const montoContainer = document.getElementById('org-monto-container');
+  const montoVal = document.getElementById('org-monto-inscripcion');
+  
+  if (level === 'Privada') {
+    if (privateOptions) privateOptions.classList.remove('hidden');
+    if (contractCheckbox) contractCheckbox.required = true;
+  } else {
+    if (privateOptions) privateOptions.classList.add('hidden');
+    if (contractCheckbox) {
+      contractCheckbox.required = false;
+      contractCheckbox.checked = false;
+    }
+    if (tienePozo) tienePozo.checked = false;
+    if (montoContainer) montoContainer.classList.add('hidden');
+    if (montoVal) {
+      montoVal.required = false;
+      montoVal.value = '';
+    }
+  }
 }
 
 let createdQuinielaData = null;
@@ -665,12 +723,32 @@ async function handleCreateQuiniela(e) {
     return;
   }
 
+  let tienePozo = 'false';
+  let montoInscripcion = '0';
+  let aceptaContrato = 'false';
+
+  if (level === 'Privada') {
+    const pozoEl = document.getElementById('org-tiene-pozo');
+    const montoEl = document.getElementById('org-monto-inscripcion');
+    const contratoEl = document.getElementById('org-acepta-contrato');
+
+    tienePozo = (pozoEl && pozoEl.checked) ? 'true' : 'false';
+    montoInscripcion = (montoEl && pozoEl.checked) ? montoEl.value.trim() : '0';
+    aceptaContrato = (contratoEl && contratoEl.checked) ? 'true' : 'false';
+
+    if (!contratoEl || !contratoEl.checked) {
+      errEl.textContent = 'Debe aceptar los términos de responsabilidad de la quiniela privada.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+  }
+
   btn.disabled = true;
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creando Quiniela...`;
   errEl.classList.add('hidden');
 
   try {
-    const url = `${CONFIG.API_URL}?action=createQuiniela&email=${encodeURIComponent(email)}&type=${encodeURIComponent(type)}&nivel=${encodeURIComponent(level)}`;
+    const url = `${CONFIG.API_URL}?action=createQuiniela&email=${encodeURIComponent(email)}&type=${encodeURIComponent(type)}&nivel=${encodeURIComponent(level)}&tiene_pozo=${tienePozo}&monto_inscripcion=${encodeURIComponent(montoInscripcion)}&acepta_contrato=${aceptaContrato}`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -928,18 +1006,8 @@ function updateUserHeaderUI() {
   const createBtn = document.getElementById('create-quiniela-banner-btn');
   if (createBtn) {
     if (isVip) {
-      const adminLeague = userPrivateLeagues.find(l => l.rol === 'Organizador');
-      if (adminLeague) {
-        let displayName = adminLeague.nombreLiga || '';
-        if (!displayName || displayName.startsWith('Quiniela Q-')) {
-          displayName = `Quiniela "${currentUser.name}"`;
-        }
-        createBtn.innerHTML = `<i class="fa-solid fa-gears"></i> Administrar: ${displayName}`;
-        createBtn.onclick = () => switchTab('admin-quiniela');
-      } else {
-        createBtn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Crear Quiniela';
-        createBtn.onclick = () => openCreateQuinielaModal();
-      }
+      createBtn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Crear Quiniela';
+      createBtn.onclick = () => openCreateQuinielaModal();
       createBtn.style.display = 'inline-flex';
     } else {
       createBtn.style.display = 'inline-flex';
@@ -947,6 +1015,7 @@ function updateUserHeaderUI() {
       createBtn.onclick = () => openCheckoutModal();
     }
   }
+  updateAdminTabVisibility();
 
   // Update floating header controls
   const loginIconBtn = document.getElementById('header-login-btn');
@@ -4950,12 +5019,26 @@ async function handleModalCreateQuiniela(e) {
     return;
   }
   
+  const pozoEl = document.getElementById('modal-tiene-pozo');
+  const montoEl = document.getElementById('modal-monto-inscripcion');
+  const contratoEl = document.getElementById('modal-acepta-contrato');
+  
+  const tienePozo = (pozoEl && pozoEl.checked) ? 'true' : 'false';
+  const montoInscripcion = (montoEl && pozoEl.checked) ? montoEl.value.trim() : '0';
+  const aceptaContrato = (contratoEl && contratoEl.checked) ? 'true' : 'false';
+  
+  if (!contratoEl || !contratoEl.checked) {
+    errEl.textContent = 'Debe aceptar los términos de responsabilidad de la quiniela privada.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  
   btn.disabled = true;
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creando Quiniela...`;
   errEl.classList.add('hidden');
   
   try {
-    const url = `${CONFIG.API_URL}?action=createQuiniela&email=${encodeURIComponent(email)}&type=${encodeURIComponent(type)}&nivel=${encodeURIComponent(level)}`;
+    const url = `${CONFIG.API_URL}?action=createQuiniela&email=${encodeURIComponent(email)}&type=${encodeURIComponent(type)}&nivel=${encodeURIComponent(level)}&tiene_pozo=${tienePozo}&monto_inscripcion=${encodeURIComponent(montoInscripcion)}&acepta_contrato=${aceptaContrato}`;
     const res = await fetch(url);
     const data = await res.json();
     
@@ -5470,7 +5553,7 @@ async function loadUserPrivateLeagues() {
       userPrivateLeagues = res.leagues || [];
       
       if (userPrivateLeagues.length > 0 && subtabsContainer) {
-        subtabsContainer.style.display = 'flex';
+        subtabsContainer.style.display = 'none';
         userPrivateLeagues.forEach(league => {
           const btn = document.createElement('button');
           btn.className = 'tab-btn btn-xs dyn-subtab';
@@ -5483,29 +5566,17 @@ async function loadUserPrivateLeagues() {
           
           if (league.rol === 'Organizador') {
             administeredQuinielaId = league.quinielaId;
-            // Removed bottom tab button: admin quiniela is now only accessed from the top banner button.
-            // if (adminQuinielaTab) adminQuinielaTab.style.display = 'inline-flex';
           }
         });
       }
+      updateAdminTabVisibility();
     }
     // Update create/admin button in welcome card
     const createBtn = document.getElementById('create-quiniela-banner-btn');
     if (createBtn && currentUser && currentUser.rango === 'VIP') {
-      const adminLeague = userPrivateLeagues.find(l => l.rol === 'Organizador');
-      if (adminLeague) {
-        let displayName = adminLeague.nombreLiga || '';
-        if (!displayName || displayName.startsWith('Quiniela Q-')) {
-          displayName = `Quiniela "${currentUser.name}"`;
-        }
-        createBtn.innerHTML = `<i class="fa-solid fa-gears"></i> Administrar: ${displayName}`;
-        createBtn.onclick = () => switchTab('admin-quiniela');
-        createBtn.style.display = 'inline-flex';
-      } else {
-        createBtn.innerHTML = `<i class="fa-solid fa-plus-circle"></i> Crear Quiniela`;
-        createBtn.onclick = () => openCreateQuinielaModal();
-        createBtn.style.display = 'inline-flex';
-      }
+      createBtn.innerHTML = `<i class="fa-solid fa-plus-circle"></i> Crear Quiniela`;
+      createBtn.onclick = () => openCreateQuinielaModal();
+      createBtn.style.display = 'inline-flex';
     }
     // Update context toggle button
     updateContextToggleBtn();
@@ -5669,6 +5740,7 @@ function switchQuinielaContext(targetId) {
   
   // Update toggle button text/state
   updateContextToggleBtn();
+  updateAdminTabVisibility();
   
   // Reload current active section
   const activeSec = document.querySelector('.content-section.active');
@@ -5714,5 +5786,25 @@ function updateContextToggleBtn() {
   } else {
     toggleBtn.innerHTML = `<i class="fa-solid fa-shuffle"></i> Ver Quiniela Oficial`;
     toggleBtn.onclick = () => switchQuinielaContext('GLOBAL_LIGA_2026');
+  }
+}
+
+function updateAdminTabVisibility() {
+  const adminTab = document.getElementById('tab-admin-quiniela');
+  if (adminTab && currentUser) {
+    const isOrganizer = userPrivateLeagues.some(l => l.quinielaId === activeSpreadsheetId && l.rol === 'Organizador');
+    adminTab.style.display = isOrganizer ? 'inline-flex' : 'none';
+    if (!isOrganizer) {
+      const activeSec = document.querySelector('.content-section.active');
+      if (activeSec && activeSec.id === 'sec-admin-quiniela') {
+        switchTab('predictions');
+      }
+    }
+  } else if (adminTab) {
+    adminTab.style.display = 'none';
+    const activeSec = document.querySelector('.content-section.active');
+    if (activeSec && activeSec.id === 'sec-admin-quiniela') {
+      switchTab('predictions');
+    }
   }
 }

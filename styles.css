@@ -3015,7 +3015,7 @@ body.vip-user .tab-vip-badge {
 .user-actions-banner .btn {
   width: 100% !important;
   justify-content: center !important;
-  display: inline-flex !important;
+  display: inline-flex;
   align-items: center !important;
 }
 
