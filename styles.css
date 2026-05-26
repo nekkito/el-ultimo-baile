@@ -3373,13 +3373,23 @@ body.vip-user .tab-vip-badge {
 /* ─── MSP EXTENDED FIELDS (Match Cards) ───────────────────── */
 .msp-extended-fields {
   border-top: 1px solid var(--border-color);
-  margin-top: 0.75rem;
-  padding: 0.75rem 1rem;
+  margin-top: 0;
+  padding: 0 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   background: rgba(0,0,0,0.12);
   border-radius: 0 0 12px 12px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease;
+}
+.msp-extended-fields.expanded {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  max-height: 350px;
+  opacity: 1;
 }
 .msp-row {
   display: flex;
@@ -3496,6 +3506,31 @@ body.vip-user .tab-vip-badge {
 @keyframes modalFadeIn {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.msp-toggle-btn {
+  background: rgba(236, 208, 111, 0.08);
+  border: 1px solid rgba(236, 208, 111, 0.3);
+  color: var(--accent-gold);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  text-transform: uppercase;
+}
+.msp-toggle-btn:hover {
+  background: rgba(236, 208, 111, 0.18);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 12px rgba(236, 208, 111, 0.25);
+}
+.msp-toggle-btn i {
+  transition: transform 0.2s ease;
 }
 
 

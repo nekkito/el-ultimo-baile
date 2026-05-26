@@ -86,6 +86,8 @@ const TRANSLATIONS = {
     'cards-yellow': 'Amarillas',
     'cards-red': 'Rojas',
     'cards-label': 'Tarjetas',
+    'btn-more': 'más',
+    'btn-less': 'menos',
   },
   en: {
     'login-title': 'MySportPrediction',
@@ -157,6 +159,8 @@ const TRANSLATIONS = {
     'cards-yellow': 'Yellows',
     'cards-red': 'Reds',
     'cards-label': 'Cards',
+    'btn-more': 'more',
+    'btn-less': 'less',
   },
   pt: {
     'login-title': 'MySportPrediction',
@@ -228,6 +232,8 @@ const TRANSLATIONS = {
     'cards-yellow': 'Amarelos',
     'cards-red': 'Vermelhos',
     'cards-label': 'Cartões',
+    'btn-more': 'mais',
+    'btn-less': 'menos',
   }
 };;
 
@@ -1229,10 +1235,8 @@ function renderGroupMatches(group) {
     card.dataset.matchId = m.id;
     card.innerHTML = `
       <div class="match-card-header">
-        <span class="match-id-badge">${m.id}</span>
         <div class="match-meta">
           <span class="match-date-tag"><i class="fa-regular fa-calendar"></i> ${m.d}</span>
-          <span><i class="fa-regular fa-clock"></i> ${m.t} EST</span>
         </div>
       </div>
       <div class="match-teams-row">
@@ -1257,8 +1261,10 @@ function renderGroupMatches(group) {
         </div>
       </div>
       <div class="match-card-footer">
-        <span class="stadium-info"><i class="fa-solid fa-location-dot"></i> ${sta}</span>
-        <span class="badge badge-primary" style="font-size:0.7rem;">Grupo ${group}</span>
+        <span class="stadium-info"><i class="fa-solid fa-location-dot"></i> ${sta} — ${m.t} EST</span>
+        <button class="msp-toggle-btn" onclick="toggleMspExtended('${m.id}')" id="msp-toggle-${m.id}">
+          <span class="toggle-text">${t('btn-more')}</span> <i class="fa-solid fa-chevron-right"></i>
+        </button>
       </div>
       <div class="msp-extended-fields">
         <div class="msp-row">
@@ -1383,8 +1389,6 @@ function renderPlayoffMatches() {
       card.dataset.matchId = m.id;
       card.innerHTML = `
         <div class="match-card-header">
-          <span class="match-id-badge">${m.id}</span>
-          <span class="playoff-label">${round.label}</span>
           <span class="match-date-tag"><i class="fa-regular fa-calendar"></i> ${m.d}</span>
         </div>
         <div class="match-teams-row">
@@ -1409,7 +1413,10 @@ function renderPlayoffMatches() {
           </div>
         </div>
         <div class="match-card-footer">
-          <span class="stadium-info"><i class="fa-solid fa-location-dot"></i> ${sta}</span>
+          <span class="stadium-info"><i class="fa-solid fa-location-dot"></i> ${sta}${m.t ? ' — ' + m.t + ' EST' : ''}</span>
+          <button class="msp-toggle-btn" onclick="toggleMspExtended('${m.id}')" id="msp-toggle-${m.id}">
+            <span class="toggle-text">${t('btn-more')}</span> <i class="fa-solid fa-chevron-right"></i>
+          </button>
         </div>
         <div class="msp-extended-fields">
           <div class="msp-row">
@@ -1519,6 +1526,25 @@ function changeGoal(matchId, side, delta) {
   if (activeStage === 'groups') {
     const match = GROUP_MATCHES.find(m => m.id === matchId);
     if (match) { updateStandingsPanel(match.g); updateBestThirdsPanel(); }
+  }
+}
+
+function toggleMspExtended(matchId) {
+  const card = document.querySelector(`.match-card[data-match-id="${matchId}"]`);
+  if (!card) return;
+  const fields = card.querySelector('.msp-extended-fields');
+  const btn = card.querySelector('.msp-toggle-btn');
+  if (!fields || !btn) return;
+  
+  const isExpanded = fields.classList.toggle('expanded');
+  const textEl = btn.querySelector('.toggle-text');
+  const iconEl = btn.querySelector('i');
+  
+  if (textEl) {
+    textEl.textContent = isExpanded ? t('btn-less') : t('btn-more');
+  }
+  if (iconEl) {
+    iconEl.className = isExpanded ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right';
   }
 }
 
