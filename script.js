@@ -1346,10 +1346,13 @@ function renderGroupMatches(group) {
       </div>
       <div class="match-card-footer">
         <span class="stadium-info"><i class="fa-solid fa-location-dot"></i> ${sta} — ${m.t} EST</span>
+        ${activeSpreadsheetId === 'GLOBAL_LIGA_2026' ? `
         <button class="msp-toggle-btn" onclick="toggleMspExtended('${m.id}')" id="msp-toggle-${m.id}">
           <span class="toggle-text">${t('btn-more')}</span> <i class="fa-solid fa-chevron-right"></i>
         </button>
+        ` : ''}
       </div>
+      ${activeSpreadsheetId === 'GLOBAL_LIGA_2026' ? `
       <div class="msp-extended-fields">
         <div class="msp-row">
           <span class="msp-label"><i class="fa-solid fa-hourglass-half" style="color:#60a5fa;"></i> ${t('half1')}</span>
@@ -1403,7 +1406,8 @@ function renderGroupMatches(group) {
             <button class="msp-goal-btn" onclick="changeMspField('${m.id}','rc',+1)">+</button>
           </div>
         </div>
-      </div>`, 
+      </div>
+      ` : ''}`, 
     container.appendChild(card);
   });
 
@@ -1498,10 +1502,13 @@ function renderPlayoffMatches() {
         </div>
         <div class="match-card-footer">
           <span class="stadium-info"><i class="fa-solid fa-location-dot"></i> ${sta}${m.t ? ' — ' + m.t + ' EST' : ''}</span>
+          ${activeSpreadsheetId === 'GLOBAL_LIGA_2026' ? `
           <button class="msp-toggle-btn" onclick="toggleMspExtended('${m.id}')" id="msp-toggle-${m.id}">
             <span class="toggle-text">${t('btn-more')}</span> <i class="fa-solid fa-chevron-right"></i>
           </button>
+          ` : ''}
         </div>
+        ${activeSpreadsheetId === 'GLOBAL_LIGA_2026' ? `
         <div class="msp-extended-fields">
           <div class="msp-row">
             <span class="msp-label"><i class="fa-solid fa-hourglass-half" style="color:#60a5fa;"></i> ${t('half1')}</span>
@@ -1555,7 +1562,8 @@ function renderPlayoffMatches() {
               <button class="msp-goal-btn" onclick="changeMspField('${m.id}','rc',+1)">+</button>
             </div>
           </div>
-        </div>`;
+        </div>
+        ` : ''}`;
       container.appendChild(card);
     });
   });
