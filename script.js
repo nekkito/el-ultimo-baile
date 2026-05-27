@@ -427,7 +427,57 @@ let currentSpreadsheetId = null;
 let activeSpreadsheetId = 'GLOBAL_LIGA_2026';
 let currentQuinielaType = 'Completa';
 let allGroupMatchesPlayed = false;
-let dailyTimerInterval = null;
+let dailyTimerInterval = null;function getPredictionsKey() {
+  if (!currentUser) return 'quinielaPreds_guest';
+  return `quinielaPreds_${currentSpreadsheetId || 'GLOBAL_LIGA_2026'}_${currentUser.email}`;
+}
+
+async function syncPredictionsWithServer() {
+  if (!currentUser) return;
+  try {
+    const email = currentUser.email;
+    const leagueId = currentSpreadsheetId || 'GLOBAL_LIGA_2026';
+    const url = `${CONFIG.API_URL}?action=playerDetail&name=${encodeURIComponent(email)}&spreadsheetId=${encodeURIComponent(leagueId)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const data = await res.json();
+    if (data.status === 'ok' && data.predictions) {
+      const serverPreds = {};
+      data.predictions.forEach(p => {
+        if (p.id) {
+          serverPreds[p.id] = {
+            h: p.predH !== undefined ? p.predH : 0,
+            a: p.predA !== undefined ? p.predA : 0,
+            ht1h: 0,
+            ht1a: 0,
+            ht2h: 0,
+            ht2a: 0,
+            btts: false,
+            yc: 0,
+            rc: 0
+          };
+        }
+      });
+      predictions = serverPreds;
+      localStorage.setItem(getPredictionsKey(), JSON.stringify(predictions));
+      
+      const activeSec = document.querySelector('.content-section.active');
+      if (activeSec && activeSec.id === 'sec-pronosticos') {
+        if (activeStage === 'groups') {
+          renderGroupMatches(activeGroup);
+        } else {
+          renderPlayoffMatches();
+        }
+        if (activeStage === 'groups') {
+          updateStandingsPanel(activeGroup);
+          updateBestThirdsPanel();
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[Sync] Error syncing predictions:', err);
+  }
+}
 
 // ─── INIT ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -459,8 +509,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Load predictions
-    const saved = localStorage.getItem(`quinielaPreds_${currentUser.email}`);
-    if (saved) predictions = JSON.parse(saved);
+    const saved = localStorage.getItem(getPredictionsKey());
+    if (saved) {
+      predictions = JSON.parse(saved);
+    } else {
+      predictions = {};
+    }
+    syncPredictionsWithServer();
 
     switchFixtureStage('groups');
     updateStandingsPanel('A');
@@ -1077,8 +1132,13 @@ function showApp() {
   });
 
   // Load predictions from localStorage (autosave)
-  const saved = localStorage.getItem(`quinielaPreds_${currentUser.email}`);
-  if (saved) predictions = JSON.parse(saved);
+  const saved = localStorage.getItem(getPredictionsKey());
+  if (saved) {
+    predictions = JSON.parse(saved);
+  } else {
+    predictions = {};
+  }
+  syncPredictionsWithServer();
 
   // Render initial view
   switchFixtureStage('groups');
@@ -1605,7 +1665,7 @@ function changeGoal(matchId, side, delta) {
   const el = document.getElementById(`goal-${side}-${matchId}`);
   if (el) el.textContent = predictions[matchId][side];
   // Autosave locally
-  localStorage.setItem(`quinielaPreds_${currentUser?.email}`, JSON.stringify(predictions));
+  localStorage.setItem(getPredictionsKey(), JSON.stringify(predictions));
   // Recalculate standings if in group mode
   if (activeStage === 'groups') {
     const match = GROUP_MATCHES.find(m => m.id === matchId);
@@ -1637,7 +1697,7 @@ function changeMspField(matchId, field, delta) {
   predictions[matchId][field] = Math.max(0, (predictions[matchId][field] || 0) + delta);
   const el = document.getElementById(`msp-${field}-${matchId}`);
   if (el) el.textContent = predictions[matchId][field];
-  localStorage.setItem(`quinielaPreds_${currentUser?.email}`, JSON.stringify(predictions));
+  localStorage.setItem(getPredictionsKey(), JSON.stringify(predictions));
 }
 
 function toggleBtts(matchId) {
@@ -1648,7 +1708,7 @@ function toggleBtts(matchId) {
     btn.textContent = predictions[matchId].btts ? 'Sí / Yes' : 'No';
     btn.classList.toggle('active', predictions[matchId].btts);
   }
-  localStorage.setItem(`quinielaPreds_${currentUser?.email}`, JSON.stringify(predictions));
+  localStorage.setItem(getPredictionsKey(), JSON.stringify(predictions));
 }
 
 // ─── GROUP STANDINGS ────────────────────────────────────────────
@@ -1791,7 +1851,7 @@ async function saveAllPredictions() {
 
     if (data.status === 'ok' || data.result === 'success') {
       showSaveAlert(t('save-success'), 'success');
-      localStorage.setItem(`quinielaPreds_${currentUser.email}`, JSON.stringify(predictions));
+      localStorage.setItem(getPredictionsKey(), JSON.stringify(predictions));
     } else {
       throw new Error(data.message || 'server-error');
     }
@@ -3534,7 +3594,7 @@ async function simulatePaymentSuccess() {
 
       // Push predictions if guest predictions saved
       if (Object.keys(predictions).length > 0) {
-        localStorage.setItem(`quinielaPreds_${currentUser.email}`, JSON.stringify(predictions));
+        localStorage.setItem(getPredictionsKey(), JSON.stringify(predictions));
         await fetch(`${CONFIG.API_URL}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -4788,7 +4848,7 @@ async function handleRegistration(e) {
 
     // Push guest predictions to DB
     if (Object.keys(predictions).length > 0) {
-      localStorage.setItem(`quinielaPreds_${currentUser.email}`, JSON.stringify(predictions));
+      localStorage.setItem(getPredictionsKey(), JSON.stringify(predictions));
       try {
         await fetch(`${CONFIG.API_URL}`, {
           method: 'POST',
@@ -5760,6 +5820,17 @@ function switchQuinielaContext(targetId) {
   updateContextToggleBtn();
   updateAdminTabVisibility();
   
+  // Load predictions for this context
+  const saved = localStorage.getItem(getPredictionsKey());
+  if (saved) {
+    predictions = JSON.parse(saved);
+  } else {
+    predictions = {};
+  }
+  
+  // Sync predictions in background
+  syncPredictionsWithServer();
+  
   // Reload current active section
   const activeSec = document.querySelector('.content-section.active');
   if (activeSec) {
@@ -5770,6 +5841,12 @@ function switchQuinielaContext(targetId) {
       loadChatMessages();
     } else if (tabId === 'analytics') {
       loadSocialTrends();
+    } else if (tabId === 'pronosticos') {
+      if (activeStage === 'groups') {
+        renderGroupMatches(activeGroup);
+      } else {
+        renderPlayoffMatches();
+      }
     }
   }
 }
